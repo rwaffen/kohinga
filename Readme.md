@@ -1,15 +1,17 @@
-# Install
+# Kohinga - Collection
+
+Kohinga is the maori word for collection.
+This is an app to handle you image collection.
+
+## Install
 
     bundle install --path vendor/gems
 
-# DB
+### DB
 
-    # # neue leere migration anlegen
-    # bundle exec rake db:create_migration NAME=create_images_table
-    
     bundle exec rake db:create
     bundle exec rake db:migrate
 
-# Start
+## Start
 
     bundle exec ruby app.rb
