@@ -1,0 +1,6 @@
+data/images/*
+data/db/*.sqlite3
+public/images/*
+vendor/*
+.DS_Store
+.bundle/

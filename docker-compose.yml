@@ -1,0 +1,12 @@
+---
+kohinga:
+  build: .
+  command: /app/entry.sh
+  # volumes:
+  #   - ./images:/app/images:ro
+  #   - ./thumbs:/app/public/images
+  #   - ./development.sqlite3:/app/db/development.sqlite3
+  ports:
+  - "4567:4567"
+  environment:
+    - RACK_ENV=production

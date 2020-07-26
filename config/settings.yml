@@ -1,0 +1,9 @@
+---
+thumb_path: /images/thumbs
+originals_path: data/images
+thumb_target: public/images/thumbs
+thumb_res: 200x300^
+image_extentions:
+  - 'jpg'
+  - 'jpeg'
+  - 'png'

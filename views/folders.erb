@@ -1,0 +1,55 @@
+
+<%
+  current_folder = Folder.where(folder_path: folder_root).first
+
+  unless current_folder.nil?
+    entry_point   = Folder.where(folder_path: folder_root).first.sub_folders
+    parent_folder = Folder.where(folder_path: folder_root).first.parent_folder
+    images        = Image.where(folder_path: folder_root.delete_suffix('/') ).order(image_name: :asc).paginate(page: params[:page], per_page: 18)
+  end
+%>
+
+<nav aria-label="breadcrumb">
+  <ol class="breadcrumb">
+    <% breadcrumbs = folder_root.split("/") %>
+      <% breadcrumbs.each_with_index do |breadcrump, i| %>
+        <% if i == 0 %>
+        <li class="breadcrumb-item">
+          <a href="/folders"><%= breadcrump %></a>
+        </li>
+      <% else %>
+        <li class="breadcrumb-item">
+          <a href="/folders/<%= breadcrumbs.take(i).join('/') %>/<%= breadcrump %>/"><%= breadcrump %></a>
+        </li>
+      <% end %>
+    <% end %>
+  </ol>
+</nav>
+
+<% unless current_folder.nil? %>
+  <% entry_point.each do |entry| %>
+    <a class="btn btn-outline-primary" href="/folders/<%= entry %>"><%= entry.split('/').last %></a>
+  <% end %>
+    <a class="btn btn-outline-secondary" href="/folders/<%= parent_folder %>/">Up</a>
+
+  <hr/>
+
+  <% unless images.empty? %>
+  <div class="row row-cols-6 row-cols-md-6">
+    <% images.each do |image| %>
+      <div class="col mb-3">
+        <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
+          <div class="card">
+            <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top" alt="...">
+            <div class="card-footer">
+              <small><%= truncate(image.image_name, :length => 17) %></small>
+            </div>
+          </div>
+        </a>
+      </div>
+    <% end %>
+  </div>
+  <% end %>
+
+  <%= will_paginate images, {:previous_label => '«', :next_label => '»'} %>
+<% end %>
