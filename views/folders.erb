@@ -5,7 +5,7 @@
   unless current_folder.nil?
     entry_point   = Folder.where(folder_path: folder_root).first.sub_folders
     parent_folder = Folder.where(folder_path: folder_root).first.parent_folder
-    images        = Image.where(folder_path: folder_root.delete_suffix('/') ).order(image_name: :asc).paginate(page: params[:page], per_page: 18)
+    images        = Image.where(folder_path: folder_root.delete_suffix('/') ).order(image_name: :asc).paginate(page: params[:page], per_page: 20)
   end
 %>
 
@@ -35,12 +35,12 @@
   <hr/>
 
   <% unless images.empty? %>
-  <div class="row row-cols-6 row-cols-md-6">
+  <div class="row">
     <% images.each do |image| %>
-      <div class="col mb-3">
+      <div class="col-auto mb-2">
         <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
           <div class="card">
-            <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top" alt="...">
+            <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top">
             <div class="card-footer">
               <small><%= truncate(image.image_name, :length => 17) %></small>
             </div>
