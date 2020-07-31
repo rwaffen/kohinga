@@ -74,7 +74,7 @@ def create_thumbs(thumbs_path, size)
       convert.extent(size)
       convert << image_path # output file
       convert.call
-      p "generated: #{image_path}"
+      puts "generated: #{image_path}"
     end
   end
 end
@@ -83,10 +83,11 @@ def remove_file(thumbs_path)
   Image.all.each do |image|
     image_path = image.file_path
     thumb_path = "#{thumbs_path}/#{image.md5_path}.png"
+
     unless File.file?(image_path)
-      p "removing from db: #{image.file_path}"
+      puts "removing from db: #{image.file_path}"
       image.destroy
-      p "removing from fs: #{thumb_path}"
+      puts "removing from fs: #{thumb_path}"
       File.delete(thumb_path)
     end
   end
