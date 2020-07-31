@@ -53,6 +53,10 @@ def write_folders_to_db(folder_hash)
       folder.sub_folders   = folder_path[:sub_folders]
       folder.md5_path      = folder_path[:md5_path]
     end
+    Folder.update_all(
+      {sub_folders: folder_path[:sub_folders]},
+      {md5_path: folder_path[:md5_path]}
+    )
   end
 end
 
