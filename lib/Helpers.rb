@@ -94,10 +94,10 @@ def remove_file(thumbs_path)
 end
 
 def build_index(image_root, thumbs_path, thumb_size, extensions)
+  remove_file thumbs_path
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs thumbs_path, thumb_size
-  remove_file thumbs_path
 end
 
 def flatten_paths_array(paths)
