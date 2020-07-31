@@ -88,16 +88,28 @@ def remove_file(thumbs_path)
     thumb_path = "#{thumbs_path}/#{image.md5_path}.png"
 
     unless File.file?(image_path)
-      puts "removing from db: #{image.file_path}"
+      puts "removing image from db: #{image.file_path}"
       image.destroy
-      puts "removing from fs: #{thumb_path}"
+      puts "removing thumbnail from fs: #{thumb_path}"
       File.delete(thumb_path)
+    end
+  end
+end
+
+def remove_folder
+  Folder.all.each do |folder|
+    folder_path = folder.folder_path
+
+    unless File.directory?(folder_path)
+      puts "removing folder from db: #{folder.folder_path}"
+      folder.destroy
     end
   end
 end
 
 def build_index(image_root, thumbs_path, thumb_size, extensions)
   remove_file thumbs_path
+  remove_folder
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs thumbs_path, thumb_size
