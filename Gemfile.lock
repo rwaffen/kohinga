@@ -36,6 +36,8 @@ GEM
       ruby2_keywords (~> 0.0.1)
     nokogiri (1.10.9)
       mini_portile2 (~> 2.4.0)
+    octicons (10.0.0)
+      nokogiri (>= 1.6.3.1)
     rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
@@ -76,6 +78,7 @@ DEPENDENCIES
   actionview
   activerecord
   mini_magick
+  octicons
   rake
   sinatra
   sinatra-activerecord
