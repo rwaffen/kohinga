@@ -35,21 +35,27 @@
 <% entry_point.each do |entry| %>
   <a class="btn btn-outline-primary btn-sm mr-1 mb-1" href="/folders/<%= entry %>"><%= entry.split('/').last %></a>
 <% end %>
-  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/">Up</a>
+<% unless folder_root == "#{settings.originals_path}/" %>
+  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
+<% end %>
 </div>
 
   <% unless images.empty? %>
   <div class="row mt-2">
     <% images.each do |image| %>
       <div class="col-auto">
-        <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
           <div class="card mb-2">
+            <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
             <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top">
-            <div class="card-footer">
-              <small><%= truncate(image.image_name, :length => 17) %></small>
-            </div>
+            </a>
+            <small class="mt-1" align="center"><%= truncate(image.image_name, :length => 27) %></small>
+          <div class="btn-group ml-1 mb-1 mt-1" role="group">
+            <form action="/image/<%= image.md5_path %>" method="post">
+              <input name="_method" type="hidden" value="delete" />
+              <button class="btn btn-outline-danger btn-sm" type="submit"><%= trashcan %></button>
+            </form>
           </div>
-        </a>
+        </div>
       </div>
     <% end %>
   </div>
