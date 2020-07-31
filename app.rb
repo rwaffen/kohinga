@@ -2,6 +2,7 @@ require 'action_view'
 require 'digest'
 require 'fileutils'
 require 'mini_magick'
+require 'octicons'
 require 'sinatra'
 require 'sinatra/activerecord'
 require 'sinatra/config_file'
@@ -15,6 +16,8 @@ require_relative 'lib/Models'
 config_file 'config/settings.yml'
 
 include ActionView::Helpers::TextHelper
+
+set :method_override, true
 
 get '/' do
   erb :index, :locals => {:message => nil }
@@ -33,6 +36,13 @@ end
 get '/image/:md5' do
   image = Image.find_by(md5_path: params[:md5])
   send_file("#{image.file_path}", :disposition => 'inline')
+end
+
+delete '/image/:md5' do
+  image = Image.find_by(md5_path: params[:md5])
+  File.delete(image.file_path) if File.exist?(image.file_path)
+  image.destroy
+  redirect back
 end
 
 get '/indexer' do
