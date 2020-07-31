@@ -18,8 +18,9 @@
       <% breadcrumbs.each_with_index do |breadcrump, i| %>
         <% if i == 0 %>
         <li class="breadcrumb-item">
-          <a href="/folders"><%= breadcrump %></a>
+          <a href="/folders"><%= versions %></a>
         </li>
+      <% elsif i == 1 %>
       <% else %>
         <li class="breadcrumb-item">
           <a href="/folders/<%= breadcrumbs.take(i).join('/') %>/<%= breadcrump %>/"><%= breadcrump %></a>
