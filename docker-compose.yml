@@ -2,7 +2,7 @@
 version: "3.5"
 services:
   kohinga:
-    image: kohinga:latest
+    image: rwaffen/kohinga:develop
     container_name: kohinga
     environment:
       - PUID=1001
