@@ -1,5 +1,13 @@
 # Kohinga
 
+[![Docker Hub package][dockerhub-badge]][dockerhub-link]
+
+[dockerhub-badge]: https://img.shields.io/badge/images%20on-Docker%20Hub-blue.svg
+
+[dockerhub-link]: https://hub.docker.com/r/rwaffen/kohinga
+
+## General
+
 Kohinga is the maori word for collection.
 
 This is an app to handle your image collection.
@@ -14,7 +22,7 @@ It is a ruby sinatra web app bundled with bootstrap, jquery and fancybox.
     bundle exec rake db:create
     bundle exec rake db:migrate
 
-## Start
+### Start
 
     bundle exec ruby app.rb
 
@@ -42,12 +50,14 @@ The folders can be configured in `config/settings.yml`. But be aware that the de
 
 ## Docker
 
+### Build
+
 There is a Dockerfile to build a container. This can be done with:
 
     cd kohinga
     docker build -t kohinga .
 
-I have not yet a public docker image on dockerhub.
+### Docker Compose
 
 For docker-compose see `docker-compose.yaml` or use this example:
 
@@ -55,7 +65,7 @@ For docker-compose see `docker-compose.yaml` or use this example:
     version: "3.5"
     services:
       kohinga:
-        image: kohinga:latest
+        image: rwaffen/kohinga:develop
         container_name: kohinga
         volumes:
           # keep db outside of container

@@ -53,6 +53,13 @@ def write_folders_to_db(folder_hash)
       folder.sub_folders   = folder_path[:sub_folders]
       folder.md5_path      = folder_path[:md5_path]
     end
+
+    updates = Folder.find_by(md5_path: folder_path[:md5_path])
+    if updates.sub_folders != folder_path[:sub_folders]
+       updates.sub_folders = folder_path[:sub_folders]
+       updates.save
+    end
+
   end
 end
 
@@ -70,7 +77,7 @@ def create_thumbs(thumbs_path, size)
       convert.extent(size)
       convert << image_path # output file
       convert.call
-      p "generated: #{image_path}"
+      puts "generated: #{image_path}"
     end
   end
 end
@@ -79,20 +86,33 @@ def remove_file(thumbs_path)
   Image.all.each do |image|
     image_path = image.file_path
     thumb_path = "#{thumbs_path}/#{image.md5_path}.png"
+
     unless File.file?(image_path)
-      p "removing from db: #{image.file_path}"
+      puts "removing image from db: #{image.file_path}"
       image.destroy
-      p "removing from fs: #{thumb_path}"
+      puts "removing thumbnail from fs: #{thumb_path}"
       File.delete(thumb_path)
     end
   end
 end
 
+def remove_folder
+  Folder.all.each do |folder|
+    folder_path = folder.folder_path
+
+    unless File.directory?(folder_path)
+      puts "removing folder from db: #{folder.folder_path}"
+      folder.destroy
+    end
+  end
+end
+
 def build_index(image_root, thumbs_path, thumb_size, extensions)
+  remove_file thumbs_path
+  remove_folder
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs thumbs_path, thumb_size
-  remove_file thumbs_path
 end
 
 def flatten_paths_array(paths)
