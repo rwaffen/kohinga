@@ -1,0 +1,15 @@
+<%
+  settings_yaml = YAML.load_file('config/settings.yml')
+%>
+
+images_per_page: <%= Settings.images_per_page %> <br>
+params: <%= params %> <br>
+settings: <%= settings_yaml %> <br>
+
+<%
+if params['images_per_page']
+  settings_yaml['images_per_page'] = params['images_per_page']
+  File.open("config/settings.yml", "w") { |file| file.write(settings_yaml.to_yaml) }
+  Settings.reload!
+end
+%>

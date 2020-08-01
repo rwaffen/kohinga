@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'actionview'
 gem 'activerecord'
+gem 'config'
 gem 'mini_magick'
 gem 'octicons'
 gem 'rake'
