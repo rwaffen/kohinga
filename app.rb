@@ -1,35 +1,42 @@
 require 'action_view'
+require 'config'
 require 'digest'
 require 'fileutils'
 require 'mini_magick'
 require 'octicons'
 require 'sinatra'
 require 'sinatra/activerecord'
-require 'sinatra/config_file'
 require 'will_paginate'
 require 'will_paginate/active_record'
+require 'yaml'
 
 require_relative 'lib/BootstrapLinkRenderer'
 require_relative 'lib/Helpers'
 require_relative 'lib/Models'
 
-config_file 'config/settings.yml'
+set :method_override, true
 
 include ActionView::Helpers::TextHelper
 
-set :method_override, true
+Config.load_and_set_settings(
+  "#{File.dirname(__FILE__)}/config/settings.yml"
+)
 
 get '/' do
   erb :index, :locals => {:message => nil }
 end
 
+get '/config' do
+  erb :config
+end
+
 get '/folders' do
-  @thumb_path   = settings.thumb_path
-  erb :folders, :locals => {:folder_root => "#{settings.originals_path}/"}
+  @thumb_path   = Settings.thumb_path
+  erb :folders, :locals => {:folder_root => "#{Settings.originals_path}/"}
 end
 
 get '/folders/*' do |path|
-  @thumb_path   = settings.thumb_path
+  @thumb_path   = Settings.thumb_path
   erb :folders, :locals => {:folder_root => path}
 end
 
@@ -47,10 +54,10 @@ end
 
 get '/indexer' do
   build_index(
-    settings.originals_path,
-    settings.thumb_target,
-    settings.thumb_res,
-    settings.image_extentions
+    Settings.originals_path,
+    Settings.thumb_target,
+    Settings.thumb_res,
+    Settings.image_extentions
   )
   erb :index, :locals => {:message => 'Index ready'}
 end

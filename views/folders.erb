@@ -1,14 +1,38 @@
-
 <%
   current_folder = Folder.where(folder_path: folder_root).first
   trashcan       = Octicons::Octicon.new("trashcan").to_svg
   arrow_up       = Octicons::Octicon.new("arrow-up").to_svg
   versions       = Octicons::Octicon.new("versions").to_svg
+  plus           = Octicons::Octicon.new("plus").to_svg
+  info           = Octicons::Octicon.new("info").to_svg
+  pencil         = Octicons::Octicon.new("pencil").to_svg
+  move           = Octicons::Octicon.new("git-compare").to_svg
 
   unless current_folder.nil?
-    entry_point   = Folder.where(folder_path: folder_root).first.sub_folders
-    parent_folder = Folder.where(folder_path: folder_root).first.parent_folder
-    images        = Image.where(folder_path: folder_root.delete_suffix('/') ).order(image_name: :asc).paginate(page: params[:page], per_page: 20)
+    folder        = Folder.where(folder_path: folder_root).first
+    entry_point   = folder.sub_folders
+    parent_folder = folder.parent_folder
+    this_folder   = folder.folder_path
+    images        = Image.where(
+                      folder_path: folder_root.delete_suffix('/')
+                    ).order(image_name: :asc).paginate(
+                      page: params[:page],
+                      per_page: Settings.images_per_page
+                    )
+  end
+
+  unless params.empty?
+    unless params['add_folder'].nil?
+      FileUtils.mkdir_p params['add_folder']
+    end
+
+    if params['delete_folder']
+      FileUtils.rm_r this_folder
+    end
+
+    unless params['move_folder'].nil?
+      FileUtils.mv this_folder, params['move_folder']
+    end
   end
 %>
 
@@ -35,31 +59,132 @@
 <% entry_point.each do |entry| %>
   <a class="btn btn-outline-primary btn-sm mr-1 mb-1" href="/folders/<%= entry %>"><%= entry.split('/').last %></a>
 <% end %>
-<% unless folder_root == "#{settings.originals_path}/" %>
+<% unless folder_root == "#{Settings.originals_path}/" %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
 <% end %>
+  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
+  <a class="btn btn-outline-info btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderMoveModal"><%= move %></a>
+  <a class="btn btn-outline-danger btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderDeleteModal"><%= trashcan %></a>
 </div>
 
   <% unless images.empty? %>
   <div class="row mt-2">
     <% images.each do |image| %>
+    <%
+      short_md5 = truncate(image.md5_path, :length => 8, :omission => '')
+    %>
       <div class="col-auto">
           <div class="card mb-2">
             <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
             <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top">
             </a>
+
             <small class="mt-1" align="center"><%= truncate(image.image_name, :length => 27) %></small>
-          <div class="btn-group ml-1 mb-1 mt-1" role="group">
-            <form action="/image/<%= image.md5_path %>" method="post">
-              <input name="_method" type="hidden" value="delete" />
-              <button class="btn btn-outline-danger btn-sm" type="submit"><%= trashcan %></button>
-            </form>
+
+            <div class="btn-toolbar mb-1 ml-1" role="toolbar" aria-label="Toolbar with button groups">
+                <button class="btn btn-outline-primary btn-sm mr-1" type="button" data-toggle="modal" data-target="#Info<%= short_md5 %>Modal"><%= info %></button>
+                <a class="btn btn-outline-primary btn-sm mr-1 disabled" type="button"><%= pencil %></a>
+                <form action="/image/<%= image.md5_path %>" method="post">
+                  <input name="_method" type="hidden" value="delete" />
+                  <button class="btn btn-outline-danger btn-sm mr-1" type="submit"><%= trashcan %></button>
+                </form>
+            </div>
+
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="Info<%= short_md5 %>Modal" tabindex="-1" role="dialog" aria-labelledby="Info<%= short_md5 %>ModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="Info<%= short_md5 %>ModalLabel">Info</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              ID: <small><%= image.id %></small><br>
+              MD5: <small><%= image.md5_path %></small><br>
+              Path: <small><%= image.file_path %></small><br>
+              Folder: <small><%= image.folder_path %></small><br>
+              Name: <small><%= image.image_name %></small><br>
+              Created: <small><%= image.created_at %></small><br>
+              Updated: <small><%= image.updated_at %></small><br>
+            </div>
           </div>
         </div>
       </div>
+
     <% end %>
   </div>
   <% end %>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderPlusModal" tabindex="-1" role="dialog" aria-labelledby="FolderPlusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderPlusModalLabel">Add Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="text" class="form-control" name="add_folder" value="<%= this_folder %>" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderDeleteModal" tabindex="-1" role="dialog" aria-labelledby="FolderDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderDeleteModalLabel">delete Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="hidden" name="delete_folder" value="true" />
+            </div>
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderMoveModal" tabindex="-1" role="dialog" aria-labelledby="FolderMoveModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderMoveModalLabel">Move Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="text" class="form-control" name="move_folder" value="<%= this_folder %>" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <%= will_paginate images, {:previous_label => '«', :next_label => '»'} %>
 <% end %>
