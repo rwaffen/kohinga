@@ -10,7 +10,19 @@
   unless current_folder.nil?
     entry_point   = Folder.where(folder_path: folder_root).first.sub_folders
     parent_folder = Folder.where(folder_path: folder_root).first.parent_folder
-    images        = Image.where(folder_path: folder_root.delete_suffix('/') ).order(image_name: :asc).paginate(page: params[:page], per_page: Settings.images_per_page)
+    this_folder   = Folder.where(folder_path: folder_root).first.folder_path
+    images        = Image.where(
+                      folder_path: folder_root.delete_suffix('/')
+                    ).order(image_name: :asc).paginate(
+                      page: params[:page],
+                      per_page: Settings.images_per_page
+                    )
+  end
+
+  unless params.empty?
+    unless params['add_folder'].nil?
+      FileUtils.mkdir_p params['add_folder']
+    end
   end
 %>
 
@@ -40,7 +52,7 @@
 <% unless folder_root == "#{Settings.originals_path}/" %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
 <% end %>
-  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1 disabled" href="#"><%= plus %></a>
+  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
 </div>
 
   <% unless images.empty? %>
@@ -59,7 +71,7 @@
 
             <div class="btn-toolbar mb-1 ml-1" role="toolbar" aria-label="Toolbar with button groups">
                 <button class="btn btn-outline-primary btn-sm mr-1" type="button" data-toggle="modal" data-target="#Info<%= short_md5 %>Modal"><%= info %></button>
-                <button class="btn btn-outline-primary btn-sm mr-1 disabled" type="button"><%= pencil %></button>
+                <a class="btn btn-outline-primary btn-sm mr-1 disabled" type="button"><%= pencil %></a>
                 <form action="/image/<%= image.md5_path %>" method="post">
                   <input name="_method" type="hidden" value="delete" />
                   <button class="btn btn-outline-danger btn-sm mr-1" type="submit"><%= trashcan %></button>
@@ -95,6 +107,28 @@
     <% end %>
   </div>
   <% end %>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderPlusModal" tabindex="-1" role="dialog" aria-labelledby="FolderPlusModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderPlusModalLabel">Add Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="text" class="form-control" name="add_folder" value="<%= this_folder %>" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <%= will_paginate images, {:previous_label => '«', :next_label => '»'} %>
 <% end %>
