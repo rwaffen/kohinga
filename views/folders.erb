@@ -53,6 +53,7 @@
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
 <% end %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
+  <a class="btn btn-outline-danger btn-sm mr-1 mb-1 disabled" type="button" data-toggle="modal" data-target="#FolderDeleteModal"><%= trashcan %></a>
 </div>
 
   <% unless images.empty? %>
