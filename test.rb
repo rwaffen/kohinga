@@ -15,4 +15,8 @@ extensions  = ['jpg', 'jpeg', 'png']
 
 Config.load_and_set_settings("#{File.dirname(__FILE__)}/config/settings.yml")
 
-pp ::Settings.images_per_page
+settings_yaml = YAML.load_file('config/settings.yml')
+
+settings_yaml.each do |key, value|
+  pp key, value
+end
