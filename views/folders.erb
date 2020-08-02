@@ -6,11 +6,13 @@
   plus           = Octicons::Octicon.new("plus").to_svg
   info           = Octicons::Octicon.new("info").to_svg
   pencil         = Octicons::Octicon.new("pencil").to_svg
+  move           = Octicons::Octicon.new("git-compare").to_svg
 
   unless current_folder.nil?
-    entry_point   = Folder.where(folder_path: folder_root).first.sub_folders
-    parent_folder = Folder.where(folder_path: folder_root).first.parent_folder
-    this_folder   = Folder.where(folder_path: folder_root).first.folder_path
+    folder        = Folder.where(folder_path: folder_root).first
+    entry_point   = folder.sub_folders
+    parent_folder = folder.parent_folder
+    this_folder   = folder.folder_path
     images        = Image.where(
                       folder_path: folder_root.delete_suffix('/')
                     ).order(image_name: :asc).paginate(
@@ -22,6 +24,14 @@
   unless params.empty?
     unless params['add_folder'].nil?
       FileUtils.mkdir_p params['add_folder']
+    end
+
+    if params['delete_folder']
+      FileUtils.rm_r this_folder
+    end
+
+    unless params['move_folder'].nil?
+      FileUtils.mv this_folder, params['move_folder']
     end
   end
 %>
@@ -53,7 +63,8 @@
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
 <% end %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
-  <a class="btn btn-outline-danger btn-sm mr-1 mb-1 disabled" type="button" data-toggle="modal" data-target="#FolderDeleteModal"><%= trashcan %></a>
+  <a class="btn btn-outline-info btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderMoveModal"><%= move %></a>
+  <a class="btn btn-outline-danger btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderDeleteModal"><%= trashcan %></a>
 </div>
 
   <% unless images.empty? %>
@@ -123,6 +134,50 @@
           <form action="/folders/<%= this_folder %>" method="get" >
             <div class="input-group mb-2">
               <input type="text" class="form-control" name="add_folder" value="<%= this_folder %>" >
+            </div>
+            <button type="submit" class="btn btn-primary">Submit</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderDeleteModal" tabindex="-1" role="dialog" aria-labelledby="FolderDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderDeleteModalLabel">delete Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="hidden" name="delete_folder" value="true" />
+            </div>
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderMoveModal" tabindex="-1" role="dialog" aria-labelledby="FolderMoveModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderMoveModalLabel">Move Folder</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form action="/folders/<%= this_folder %>" method="get" >
+            <div class="input-group mb-2">
+              <input type="text" class="form-control" name="move_folder" value="<%= this_folder %>" >
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
