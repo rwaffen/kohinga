@@ -90,8 +90,11 @@ def remove_file(thumbs_path)
     unless File.file?(image_path)
       puts "removing image from db: #{image.file_path}"
       image.destroy
-      puts "removing thumbnail from fs: #{thumb_path}"
-      File.delete(thumb_path)
+
+      if File.file?(thumb_path)
+        puts "removing thumbnail from fs: #{thumb_path}"
+        File.delete(thumb_path)
+      end
     end
   end
 end
