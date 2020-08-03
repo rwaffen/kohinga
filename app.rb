@@ -52,6 +52,19 @@ delete '/image/:md5' do
   redirect back
 end
 
+post '/upload' do
+  if params[:files]
+    file_path = params[:file_target]
+
+    params['files'].each do |file|
+      target = "#{file_path}/#{file[:filename]}"
+      File.open(target, 'wb') { |f| f.write file[:tempfile].read }
+    end
+  end
+
+  redirect back
+end
+
 get '/indexer' do
   build_index(
     Settings.originals_path,

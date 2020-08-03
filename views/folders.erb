@@ -7,6 +7,7 @@
   info           = Octicons::Octicon.new("info").to_svg
   pencil         = Octicons::Octicon.new("pencil").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
+  upload         = Octicons::Octicon.new("repo-push").to_svg
 
   unless current_folder.nil?
     folder        = Folder.where(folder_path: folder_root).first
@@ -64,6 +65,7 @@
 <% end %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
   <a class="btn btn-outline-info btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderMoveModal"><%= move %></a>
+  <a class="btn btn-outline-primary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderUploadModal"><%= upload %></a>
   <a class="btn btn-outline-danger btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderDeleteModal"><%= trashcan %></a>
 </div>
 
@@ -181,6 +183,31 @@
             </div>
             <button type="submit" class="btn btn-primary">Submit</button>
           </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="FolderUploadModal" tabindex="-1" role="dialog" aria-labelledby="FolderUploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="FolderUploadModalLabel">Upload Image</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+
+          <form action='/upload' enctype="multipart/form-data" method='POST'>
+            <div class="input-group mb-2">
+              <input name="files[]" multiple type="file" class="form-control-file" />
+              <input type="hidden" name="file_target" value="<%= this_folder %>">
+            </div>
+            <button type="submit" class="btn btn-primary">Upload</button>
+          </form>
+
         </div>
       </div>
     </div>
