@@ -77,7 +77,7 @@ def create_thumbs(thumb_target, size)
       convert.extent(size)
       convert << image_path # output file
       convert.call
-      puts "generated: #{thumb_target}"
+      puts "generated: #{image_path}"
     end
   end
 end
