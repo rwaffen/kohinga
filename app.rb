@@ -54,11 +54,22 @@ end
 
 post '/upload' do
   if params[:files]
-    file_path = params[:file_target]
+    folder_path = params[:file_target].delete_suffix('/')
 
     params['files'].each do |file|
-      target = "#{file_path}/#{file[:filename]}"
+      target   = "#{folder_path}/#{file[:filename]}"
+      md5_path = Digest::MD5.hexdigest(target)
+
       File.open(target, 'wb') { |f| f.write file[:tempfile].read }
+
+      Image.find_or_create_by(md5_path: md5_path) do |image|
+        image.file_path   = target
+        image.folder_path = folder_path
+        image.image_name  = File.basename(file[:filename], '.*')
+        image.md5_path    = md5_path
+      end
+
+      create_thumb md5_path, Settings.thumb_target, Settings.thumb_res
     end
   end
 
