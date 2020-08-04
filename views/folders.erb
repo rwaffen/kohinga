@@ -8,6 +8,7 @@
   pencil         = Octicons::Octicon.new("pencil").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
   upload         = Octicons::Octicon.new("repo-push").to_svg
+  star           = Octicons::Octicon.new("star").to_svg
 
   unless current_folder.nil?
     folder        = Folder.where(folder_path: folder_root).first
@@ -70,28 +71,24 @@
 </div>
 
   <% unless images.empty? %>
-  <div class="row mt-2">
+  <div class="row mt-1">
     <% images.each do |image| %>
     <%
       short_md5 = truncate(image.md5_path, :length => 8, :omission => '')
     %>
       <div class="col-auto">
-          <div class="card mb-2">
+          <div class="card mb-1">
             <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
             <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top">
             </a>
-
             <small class="mt-1" align="center"><%= truncate(image.image_name, :length => 27) %></small>
-
-            <div class="btn-toolbar mb-1 ml-1" role="toolbar" aria-label="Toolbar with button groups">
+            <div class="btn-toolbar mb-1 ml-1 justify-content-center" role="toolbar" aria-label="Toolbar with button groups">
                 <button class="btn btn-outline-primary btn-sm mr-1" type="button" data-toggle="modal" data-target="#Info<%= short_md5 %>Modal"><%= info %></button>
                 <a class="btn btn-outline-primary btn-sm mr-1 disabled" type="button"><%= pencil %></a>
-                <form action="/image/<%= image.md5_path %>" method="post">
-                  <input name="_method" type="hidden" value="delete" />
-                  <button class="btn btn-outline-danger btn-sm mr-1" type="submit"><%= trashcan %></button>
-                </form>
+                <a class="btn btn-outline-info    btn-sm mr-1 disabled" type="button"><%= move %></a>
+                <a class="btn btn-outline-warning btn-sm mr-1 disabled" type="button"><%= star %></a>
+                <button class="btn btn-outline-danger btn-sm mr-1" type="button" data-toggle="modal" data-target="#Delete<%= short_md5 %>Modal"><%= trashcan %></button>
             </div>
-
         </div>
       </div>
 
@@ -113,6 +110,26 @@
               Name: <small><%= image.image_name %></small><br>
               Created: <small><%= image.created_at %></small><br>
               Updated: <small><%= image.updated_at %></small><br>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="Delete<%= short_md5 %>Modal" tabindex="-1" role="dialog" aria-labelledby="Delete<%= short_md5 %>ModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="Delete<%= short_md5 %>ModalLabel">Delete Image?</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <form action="/image/<%= image.md5_path %>" method="post">
+                  <input name="_method" type="hidden" value="delete" />
+                  <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
             </div>
           </div>
         </div>
@@ -199,7 +216,6 @@
           </button>
         </div>
         <div class="modal-body">
-
           <form action='/upload' enctype="multipart/form-data" method='POST'>
             <div class="input-group mb-2">
               <input name="files[]" multiple type="file" class="form-control-file" />
@@ -207,7 +223,6 @@
             </div>
             <button type="submit" class="btn btn-primary">Upload</button>
           </form>
-
         </div>
       </div>
     </div>
