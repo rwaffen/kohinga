@@ -82,6 +82,20 @@ def create_thumbs(thumb_target, size)
   end
 end
 
+def create_thumb(md5, thumb_target, size)
+  image      = Image.find_or_create_by(md5_path: md5)
+  image_path = "#{thumb_target}/#{md5}.png"
+
+  convert = MiniMagick::Tool::Convert.new
+  convert << image.file_path # input file
+  convert.resize(size)
+  convert.gravity('north')
+  convert.extent(size)
+  convert << image_path # output file
+  convert.call
+  puts "generated: #{image_path}"
+end
+
 def remove_file(thumb_target)
   Image.all.each do |image|
     image_path = image.file_path
