@@ -71,10 +71,17 @@
 </div>
 
   <% unless images.empty? %>
+
+  <% unless images.count < Settings.images_per_page.to_i %>
+  <hr />
+  <%= will_paginate images, {:previous_label => '«', :next_label => '»'} %>
+  <hr />
+  <% end %>
+
   <div class="row mt-1">
     <% images.each do |image| %>
     <% short_md5 = truncate(image.md5_path, :length => 8, :omission => '') %>
-      <div class="col-md-3">
+      <div class="<%= Settings.col_options %>">
           <div class="card mb-1">
             <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
             <img src="<%= @thumb_path %>/<%= image.md5_path %>.png" class="card-img-top">
@@ -226,5 +233,8 @@
     </div>
   </div>
 
+  <% unless images.count < Settings.images_per_page.to_i %>
+  <hr />
   <%= will_paginate images, {:previous_label => '«', :next_label => '»'} %>
+  <% end %>
 <% end %>
