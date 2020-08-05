@@ -49,6 +49,13 @@
       <input type="text" class="form-control" name="originals_path" value="<%= Settings.originals_path %>" >
     </div>
 
+    <div class="input-group mb-2">
+      <div class="input-group-prepend">
+        <div class="input-group-text fixed-width">Collum Options</div>
+      </div>
+      <input type="text" class="form-control" name="col_options" value="<%= Settings.col_options %>" >
+    </div>
+
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
 </div>
@@ -60,6 +67,7 @@ unless params.empty?
   settings_yaml['thumb_res']       = params['thumb_res']
   settings_yaml['thumb_target']    = params['thumb_target']
   settings_yaml['originals_path']  = params['originals_path']
+  settings_yaml['col_options']     = params['col_options']
 
   File.open("config/settings.yml", "w") { |file| file.write(settings_yaml.to_yaml) }
   Settings.reload!
