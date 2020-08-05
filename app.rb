@@ -35,6 +35,23 @@ get '/folders' do
   erb :folders, :locals => {:folder_root => "#{Settings.originals_path}/"}
 end
 
+post '/folder/create' do
+  if params[:add_folder]
+    FileUtils.mkdir_p params['add_folder']
+
+    md5_path = Digest::MD5.hexdigest(params['add_folder'])
+
+    Folder.find_or_create_by(md5_path: md5_path) do |folder|
+      folder.folder_path   = params['add_folder']
+      folder.parent_folder = folder_path[:parent_folder]
+      folder.sub_folders   = folder_path[:sub_folders]
+      folder.md5_path      = md5_path
+    end
+  end
+
+  redirect back
+end
+
 get '/folders/*' do |path|
   @thumb_path   = Settings.thumb_path
   erb :folders, :locals => {:folder_root => path}
