@@ -8,3 +8,4 @@ image_extentions:
 - jpeg
 - png
 images_per_page: '30'
+col_options: col-md-3
