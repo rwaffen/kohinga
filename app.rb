@@ -37,15 +37,25 @@ end
 
 post '/folder/create' do
   if params[:add_folder]
-    FileUtils.mkdir_p params['add_folder']
+    folder_path   = "#{params['add_folder']}/"
+    md5_path      = Digest::MD5.hexdigest(folder_path)
 
-    md5_path = Digest::MD5.hexdigest(params['add_folder'])
+    parent_folder = "#{File.dirname(folder_path)}/"
+    parent_md5    = Digest::MD5.hexdigest(parent_folder)
+
+    FileUtils.mkdir_p folder_path
 
     Folder.find_or_create_by(md5_path: md5_path) do |folder|
-      folder.folder_path   = params['add_folder']
-      folder.parent_folder = folder_path[:parent_folder]
-      folder.sub_folders   = folder_path[:sub_folders]
+      folder.folder_path   = folder_path
+      folder.parent_folder = parent_folder
+      folder.sub_folders   = Dir.glob("#{folder_path}/*/")
       folder.md5_path      = md5_path
+    end
+
+    updates = Folder.find_by(md5_path: parent_md5)
+    if updates.sub_folders != Dir.glob("#{parent_folder}/*/")
+      updates.sub_folders = Dir.glob("#{parent_folder}/*/")
+      updates.save
     end
   end
 
@@ -69,7 +79,7 @@ delete '/image/:md5' do
   redirect back
 end
 
-post '/upload' do
+post '/image/upload' do
   if params[:files]
     folder_path = params[:file_target].delete_suffix('/')
 
