@@ -24,10 +24,6 @@
   end
 
   unless params.empty?
-    unless params['add_folder'].nil?
-      FileUtils.mkdir_p params['add_folder']
-    end
-
     if params['delete_folder']
       FileUtils.rm_r this_folder
     end
@@ -155,7 +151,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action="/folders/<%= this_folder %>" method="get" >
+          <form action="/folder/create" method="post">
             <div class="input-group mb-2">
               <input type="text" class="form-control" name="add_folder" value="<%= this_folder %>" >
             </div>
@@ -221,7 +217,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action='/upload' enctype="multipart/form-data" method='POST'>
+          <form action='/image/upload' enctype="multipart/form-data" method='POST'>
             <div class="input-group mb-2">
               <input name="files[]" multiple type="file" class="form-control-file" />
               <input type="hidden" name="file_target" value="<%= this_folder %>">
