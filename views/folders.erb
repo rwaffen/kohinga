@@ -24,10 +24,6 @@
   end
 
   unless params.empty?
-    if params['delete_folder']
-      FileUtils.rm_r this_folder
-    end
-
     unless params['move_folder'].nil?
       FileUtils.mv this_folder, params['move_folder']
     end
@@ -173,9 +169,9 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action="/folders/<%= this_folder %>" method="get" >
+          <form action="/folder/delete/<%= folder.md5_path %>" method="post">
             <div class="input-group mb-2">
-              <input type="hidden" name="delete_folder" value="true" />
+              <input name="_method" type="hidden" value="delete" />
             </div>
             <button type="submit" class="btn btn-danger">Delete</button>
           </form>

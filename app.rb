@@ -62,6 +62,22 @@ post '/folder/create' do
   redirect back
 end
 
+delete '/folder/delete/:md5' do
+  folder        = Folder.find_by(md5_path: params[:md5])
+  parent_folder = "#{folder.parent_folder}/"
+
+  FileUtils.rm_r folder.folder_path if File.directory?(folder.folder_path)
+
+  updates = Folder.find_by(folder_path: parent_folder)
+  if updates.sub_folders != Dir.glob("#{parent_folder}*/")
+    updates.sub_folders = Dir.glob("#{parent_folder}*/")
+    updates.save
+  end
+
+  folder.destroy
+  redirect parent_folder
+end
+
 get '/folders/*' do |path|
   @thumb_path   = Settings.thumb_path
   erb :folders, :locals => {:folder_root => path}
