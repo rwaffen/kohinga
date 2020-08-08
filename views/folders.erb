@@ -9,6 +9,7 @@
   move           = Octicons::Octicon.new("git-compare").to_svg
   upload         = Octicons::Octicon.new("repo-push").to_svg
   star           = Octicons::Octicon.new("star").to_svg
+  state          = ''
 
   unless current_folder.nil?
     folder        = Folder.where(folder_path: folder_root).first
@@ -44,11 +45,12 @@
 
 <% unless current_folder.nil? %>
 <div class="btn-toolbar">
-<% entry_point.each do |entry| %>
+<% if folder_root == "#{Settings.originals_path}/"
+  state = 'disabled'
+end %>
+  <a class="btn btn-outline-primary btn-sm mr-1 mb-1 <%= state %>" href="/folders/<%= parent_folder %>"><%= arrow_up %></a>
+<% entry_point.sort.each do |entry| %>
   <a class="btn btn-outline-primary btn-sm mr-1 mb-1" href="/folders/<%= entry %>"><%= entry.split('/').last %></a>
-<% end %>
-<% unless folder_root == "#{Settings.originals_path}/" %>
-  <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" href="/folders/<%= parent_folder %>"><%= arrow_up %></a>
 <% end %>
   <a class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></a>
   <a class="btn btn-outline-info btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderMoveModal"><%= move %></a>
