@@ -22,12 +22,6 @@
                       per_page: Settings.images_per_page
                     )
   end
-
-  unless params.empty?
-    unless params['move_folder'].nil?
-      FileUtils.mv this_folder, params['move_folder']
-    end
-  end
 %>
 
 <nav aria-label="breadcrumb">
@@ -191,7 +185,7 @@
           </button>
         </div>
         <div class="modal-body">
-          <form action="/folders/<%= this_folder %>" method="get" >
+          <form action="/folder/move/<%= folder.md5_path %>" method="post" >
             <div class="input-group mb-2">
               <input type="text" class="form-control" name="move_folder" value="<%= this_folder %>" >
             </div>
