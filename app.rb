@@ -48,13 +48,13 @@ post '/folder/create' do
     Folder.find_or_create_by(md5_path: md5_path) do |folder|
       folder.folder_path   = folder_path
       folder.parent_folder = parent_folder
-      folder.sub_folders   = Dir.glob("#{folder_path}/*/")
+      folder.sub_folders   = Dir.glob("#{folder_path}*/")
       folder.md5_path      = md5_path
     end
 
     updates = Folder.find_by(md5_path: parent_md5)
-    if updates.sub_folders != Dir.glob("#{parent_folder}/*/")
-      updates.sub_folders = Dir.glob("#{parent_folder}/*/")
+    if updates.sub_folders != Dir.glob("#{parent_folder}*/")
+      updates.sub_folders = Dir.glob("#{parent_folder}*/")
       updates.save
     end
   end
@@ -64,7 +64,7 @@ end
 
 delete '/folder/delete/:md5' do
   folder        = Folder.find_by(md5_path: params[:md5])
-  parent_folder = "#{folder.parent_folder}/"
+  parent_folder = "#{folder.parent_folder}"
 
   FileUtils.rm_r folder.folder_path if File.directory?(folder.folder_path)
 
@@ -75,7 +75,7 @@ delete '/folder/delete/:md5' do
   end
 
   folder.destroy
-  redirect parent_folder
+  redirect "/folders/#{parent_folder}"
 end
 
 get '/folders/*' do |path|
