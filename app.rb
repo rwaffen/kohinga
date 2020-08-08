@@ -153,10 +153,30 @@ post '/image/upload' do
         image.md5_path    = md5_path
       end
 
-      create_thumb md5_path, Settings.thumb_target, Settings.thumb_res
+      create_thumb(md5_path, Settings.thumb_target, Settings.thumb_res)
     end
   end
 
+  redirect back
+end
+post '/image/move/:md5' do
+  new_file_path = params[:file_path]
+  image         = Image.find_by(md5_path: params[:md5])
+  new_md5_path  = Digest::MD5.hexdigest(new_file_path)
+
+  FileUtils.mv image.file_path, new_file_path
+  puts "####### moved image: from #{image.file_path} to #{new_file_path}"
+
+  Image.find_or_create_by(md5_path: new_md5_path) do |image|
+    image.file_path   = new_file_path
+    image.folder_path = File.dirname(new_file_path)
+    image.image_name  = File.basename(new_file_path, '.*')
+    image.md5_path    = new_md5_path
+  end
+
+  create_thumb(new_md5_path, Settings.thumb_target, Settings.thumb_res)
+
+  image.destroy
   redirect back
 end
 
