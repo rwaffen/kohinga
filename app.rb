@@ -30,9 +30,23 @@ get '/config' do
   erb :config
 end
 
+get '/favorites' do
+  erb :favorites
+end
+
+post '/favorite/add/:md5' do
+  image = Image.find_by(md5_path: params[:md5])
+  image.favorite = true
+  image.save
+  "true"
+end
+
 get '/folders' do
-  @thumb_path   = Settings.thumb_path
   erb :folders, :locals => {:folder_root => "#{Settings.originals_path}/"}
+end
+
+get '/folders/*' do |path|
+  erb :folders, :locals => {:folder_root => path}
 end
 
 post '/folder/create' do
@@ -117,11 +131,6 @@ post '/folder/move/:md5' do
 
   folder.destroy
   redirect "/folders/#{new_folder_path}"
-end
-
-get '/folders/*' do |path|
-  @thumb_path   = Settings.thumb_path
-  erb :folders, :locals => {:folder_root => path}
 end
 
 get '/image/:md5' do
