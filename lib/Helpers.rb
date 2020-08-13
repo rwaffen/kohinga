@@ -26,7 +26,7 @@ def index_folders(path)
     folder_list << {
       md5_path: Digest::MD5.hexdigest(folder),
       folder_path: folder,
-      parent_folder: File.dirname(folder),
+      parent_folder: "#{File.dirname(folder)}/",
       sub_folders: Dir.glob("#{folder}*/")
     }
   end
@@ -63,10 +63,10 @@ def write_folders_to_db(folder_hash)
   end
 end
 
-def create_thumbs(thumbs_path, size)
-  FileUtils.mkdir_p thumbs_path
+def create_thumbs(thumb_target, size)
+  FileUtils.mkdir_p thumb_target
   Image.all.each do |image|
-    image_path = "#{thumbs_path}/#{image.md5_path}.png"
+    image_path = "#{thumb_target}/#{image.md5_path}.png"
 
     # only create thumbs if we do not have them already
     unless File.file?(image_path)
@@ -82,16 +82,33 @@ def create_thumbs(thumbs_path, size)
   end
 end
 
-def remove_file(thumbs_path)
+def create_thumb(md5, thumb_target, size)
+  image      = Image.find_or_create_by(md5_path: md5)
+  image_path = "#{thumb_target}/#{md5}.png"
+
+  convert = MiniMagick::Tool::Convert.new
+  convert << image.file_path # input file
+  convert.resize(size)
+  convert.gravity('north')
+  convert.extent(size)
+  convert << image_path # output file
+  convert.call
+  puts "generated: #{image_path}"
+end
+
+def remove_file(thumb_target)
   Image.all.each do |image|
     image_path = image.file_path
-    thumb_path = "#{thumbs_path}/#{image.md5_path}.png"
+    thumb_path = "#{thumb_target}/#{image.md5_path}.png"
 
     unless File.file?(image_path)
       puts "removing image from db: #{image.file_path}"
       image.destroy
-      puts "removing thumbnail from fs: #{thumb_path}"
-      File.delete(thumb_path)
+
+      if File.file?(thumb_path)
+        puts "removing thumbnail from fs: #{thumb_path}"
+        File.delete(thumb_path)
+      end
     end
   end
 end
@@ -107,12 +124,12 @@ def remove_folder
   end
 end
 
-def build_index(image_root, thumbs_path, thumb_size, extensions)
-  remove_file thumbs_path
+def build_index(image_root, thumb_target, thumb_size, extensions)
+  remove_file(thumb_target)
   remove_folder
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
-  create_thumbs thumbs_path, thumb_size
+  create_thumbs(thumb_target, thumb_size)
 end
 
 def flatten_paths_array(paths)
