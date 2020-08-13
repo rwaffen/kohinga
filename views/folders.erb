@@ -49,9 +49,9 @@
 <% if folder_root == "#{Settings.originals_path}/"
   state = 'disabled'
 end %>
-  <button class="btn btn-outline-primary btn-sm mr-1 mb-1 <%= state %>" href="/folders/<%= parent_folder %>/"><%= arrow_up %></button>
+  <a class="btn btn-outline-primary btn-sm mr-1 mb-1 <%= state %>" type="button" href="/folders/<%= parent_folder %>/"><%= arrow_up %></a>
 <% entry_point.sort.each do |entry| %>
-  <button class="btn btn-outline-primary btn-sm mr-1 mb-1" href="/folders/<%= entry %>"><%= entry.split('/').last %></button>
+  <a class="btn btn-outline-primary btn-sm mr-1 mb-1" type="button" href="/folders/<%= entry %>"><%= entry.split('/').last %></a>
 <% end %>
   <button class="btn btn-outline-secondary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderPlusModal"><%= plus %></button>
   <button class="btn btn-outline-primary btn-sm mr-1 mb-1" type="button" data-toggle="modal" data-target="#FolderUploadModal"><%= upload %></button>
