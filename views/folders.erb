@@ -77,11 +77,10 @@ end %>
             </a>
             <small class="mt-1" align="center"><%= truncate(image.image_name, :length => 27) %></small>
             <div class="btn-toolbar mb-1 ml-1 justify-content-center" role="toolbar" aria-label="Toolbar with button groups">
-                <a class="btn btn-outline-primary btn-sm mr-1" type="button" data-toggle="modal" data-target="#Info<%= short_md5 %>Modal"><%= info %></a>
-                <a class="btn btn-outline-primary btn-sm mr-1 disabled" type="button"><%= pencil %></a>
-                <a class="btn btn-outline-info    btn-sm mr-1" type="button" data-toggle="modal" data-target="#Move<%= short_md5 %>Modal"><%= move %></a>
+                <button class="btn btn-outline-primary btn-sm mr-1" type="button" data-toggle="modal" data-target="#Info<%= short_md5 %>Modal"><%= info %></button>
+                <button class="btn btn-outline-info    btn-sm mr-1" type="button" data-toggle="modal" data-target="#Move<%= short_md5 %>Modal"><%= move %></button>
                 <button class="btn btn-outline-warning btn-sm mr-1" id="add_fav" type="button" value="<%= image.md5_path %>"><%= star %></button>
-                <a class="btn btn-outline-danger  btn-sm mr-1" type="button" data-toggle="modal" data-target="#Delete<%= short_md5 %>Modal"><%= trashcan %></a>
+                <button class="btn btn-outline-danger  btn-sm mr-1" type="button" data-toggle="modal" data-target="#Delete<%= short_md5 %>Modal"><%= trashcan %></button>
             </div>
         </div>
       </div>
