@@ -70,14 +70,18 @@ def create_thumbs(thumb_target, size)
 
     # only create thumbs if we do not have them already
     unless File.file?(image_path)
-      convert = MiniMagick::Tool::Convert.new
-      convert << image.file_path # input file
-      convert.resize(size)
-      convert.gravity('north')
-      convert.extent(size)
-      convert << image_path # output file
-      convert.call
-      puts "generated: #{image_path}"
+      begin  # "try" block
+        convert = MiniMagick::Tool::Convert.new
+        convert << image.file_path # input file
+        convert.resize(size)
+        convert.gravity('north')
+        convert.extent(size)
+        convert << image_path # output file
+        convert.call
+        puts "generated: #{image_path}"
+      rescue Exception => ex
+        puts "Error: #{ex.message}"
+      end
     end
   end
 end
