@@ -1,15 +1,18 @@
+require 'config'
 require 'digest'
 require 'fileutils'
 require 'mini_magick'
-require 'pp'
 require 'sinatra/activerecord'
+require 'yaml'
 
 require_relative 'lib/Models'
 require_relative 'lib/Helpers'
 
-thumbs_path = 'public/images/thumbs'
-thumb_size  = '200x300^' # the ^ is intentional, it is to crop the thumbs
-image_root  = 'data/images'
-extensions  = ['jpg', 'jpeg', 'png']
+Config.load_and_set_settings "#{File.dirname(__FILE__)}/config/settings.yml"
 
-build_index image_root, thumbs_path, thumb_size, extensions
+build_index(
+  Settings.originals_path,
+  Settings.thumb_target,
+  Settings.thumb_res,
+  Settings.image_extentions
+)
