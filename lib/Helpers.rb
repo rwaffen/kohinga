@@ -26,7 +26,7 @@ def index_folders(path)
     folder_list << {
       md5_path: Digest::MD5.hexdigest(folder),
       folder_path: folder,
-      parent_folder: File.dirname(folder),
+      parent_folder: "#{File.dirname(folder)}/",
       sub_folders: Dir.glob("#{folder}*/")
     }
   end
