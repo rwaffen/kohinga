@@ -3,6 +3,7 @@ default: &default
   adapter: sqlite3
   pool: 5
   timeout: 5000
+  options: "PRAGMA case_sensitive_like = true"
 
 development:
   <<: *default
