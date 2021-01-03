@@ -70,17 +70,36 @@ def create_thumbs(thumb_target, size)
 
     # only create thumbs if we do not have them already
     unless File.file?(image_path)
-      begin  # "try" block
-        convert = MiniMagick::Tool::Convert.new
-        convert << image.file_path # input file
-        convert.resize(size)
-        convert.gravity('north')
-        convert.extent(size)
-        convert << image_path # output file
-        convert.call
-        puts "generated: #{image_path}"
-      rescue Exception => ex
-        puts "Error: #{ex.message}"
+
+      # handle movie files
+      if Settings.movie_extentions.include? File.extname(image.file_path).delete('.')
+        begin  # "try" block
+          movie = FFMPEG::Movie.new(image.file_path)
+          movie.screenshot(
+            image_path,
+            { seek_time: 1, resolution: size[0...-1], quality: 3 },
+            preserve_aspect_ratio: :width
+          )
+          puts "generated: #{image_path}"
+        rescue Exception => ex
+          puts "Error: #{ex.message}"
+        end
+      end
+
+      # handle image files
+      if Settings.image_extentions.include? File.extname(image.file_path).delete('.')
+        begin  # "try" block
+          convert = MiniMagick::Tool::Convert.new
+          convert << image.file_path # input file
+          convert.resize(size)
+          convert.gravity('north')
+          convert.extent(size)
+          convert << image_path # output file
+          convert.call
+          puts "generated: #{image_path}"
+        rescue Exception => ex
+          puts "Error: #{ex.message}"
+        end
       end
     end
   end
@@ -90,13 +109,25 @@ def create_thumb(md5, thumb_target, size)
   image      = Image.find_or_create_by(md5_path: md5)
   image_path = "#{thumb_target}/#{md5}.png"
 
-  convert = MiniMagick::Tool::Convert.new
-  convert << image.file_path # input file
-  convert.resize(size)
-  convert.gravity('north')
-  convert.extent(size)
-  convert << image_path # output file
-  convert.call
+  if movie_extentions.include? File.extname(image.file_path)
+    movie = FFMPEG::Movie.new(image.file_path)
+    movie.screenshot(
+      image_path,
+      { seek_time: 1, resolution: size[0...-1], quality: 3 },
+      preserve_aspect_ratio: :width
+    )
+  end
+
+  if image_extentions.include? File.extname(image.file_path)
+    convert = MiniMagick::Tool::Convert.new
+    convert << image.file_path # input file
+    convert.resize(size)
+    convert.gravity('north')
+    convert.extent(size)
+    convert << image_path # output file
+    convert.call
+  end
+
   puts "generated: #{image_path}"
 end
 
@@ -130,7 +161,7 @@ end
 
 def build_index(image_root, thumb_target, thumb_size, extensions)
   remove_file(thumb_target)
-  remove_folder
+  remove_folder()
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs(thumb_target, thumb_size)

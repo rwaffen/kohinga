@@ -7,6 +7,11 @@ image_extentions:
 - jpg
 - jpeg
 - png
+movie_extentions:
+- mov
+- mp4
+- avi
+- mkv
 images_per_page: '30'
 col_options: col-md-3
 sort_order: DESC

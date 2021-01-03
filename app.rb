@@ -6,6 +6,7 @@ require 'mini_magick'
 require 'octicons'
 require 'sinatra'
 require 'sinatra/activerecord'
+require 'streamio-ffmpeg'
 require 'will_paginate'
 require 'will_paginate/active_record'
 require 'yaml'
@@ -168,6 +169,7 @@ post '/image/upload' do
 
   redirect back
 end
+
 post '/image/move/:md5' do
   new_file_path = params[:file_path]
   image         = Image.find_by(md5_path: params[:md5])
@@ -194,7 +196,7 @@ get '/indexer' do
     Settings.originals_path,
     Settings.thumb_target,
     Settings.thumb_res,
-    Settings.image_extentions
+    Settings.image_extentions + Settings.movie_extentions
   )
   erb :index, :locals => {:message => 'Index ready'}
 end

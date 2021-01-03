@@ -3,6 +3,7 @@ require 'digest'
 require 'fileutils'
 require 'mini_magick'
 require 'sinatra/activerecord'
+require 'streamio-ffmpeg'
 require 'yaml'
 
 require_relative 'lib/Models'
@@ -14,5 +15,5 @@ build_index(
   Settings.originals_path,
   Settings.thumb_target,
   Settings.thumb_res,
-  Settings.image_extentions
+  Settings.image_extentions + Settings.movie_extentions
 )
