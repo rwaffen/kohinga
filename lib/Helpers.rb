@@ -109,7 +109,7 @@ def create_thumb(md5, thumb_target, size)
   image      = Image.find_or_create_by(md5_path: md5)
   image_path = "#{thumb_target}/#{md5}.png"
 
-  if movie_extentions.include? File.extname(image.file_path)
+  if Settings.movie_extentions.include? File.extname(image.file_path)
     movie = FFMPEG::Movie.new(image.file_path)
     movie.screenshot(
       image_path,
@@ -118,7 +118,7 @@ def create_thumb(md5, thumb_target, size)
     )
   end
 
-  if image_extentions.include? File.extname(image.file_path)
+  if Settings.image_extentions.include? File.extname(image.file_path)
     convert = MiniMagick::Tool::Convert.new
     convert << image.file_path # input file
     convert.resize(size)
