@@ -17,6 +17,9 @@ require_relative 'lib/Models'
 
 set :method_override, true
 
+set :session_secret, SecureRandom.new(10)
+enable :sessions
+
 include ActionView::Helpers::TextHelper
 
 Config.load_and_set_settings(
@@ -136,7 +139,12 @@ end
 
 get '/image/:md5' do
   image = Image.find_by(md5_path: params[:md5])
-  send_file("#{image.file_path}", :disposition => 'inline')
+  send_file(
+    "#{image.file_path}",
+    :disposition => 'inline',
+    :stream => true,
+    :file_name => image.file_path
+  )
 end
 
 delete '/image/:md5' do
