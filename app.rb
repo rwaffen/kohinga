@@ -18,7 +18,7 @@ require_relative 'lib/Models'
 
 set :method_override, true
 
-set :session_secret, SecureRandom.new(10)
+set :session_secret, SecureRandom.uuid
 enable :sessions
 
 include ActionView::Helpers::TextHelper
