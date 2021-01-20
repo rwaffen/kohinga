@@ -2,6 +2,7 @@ require 'config'
 require 'digest'
 require 'fileutils'
 require 'mini_magick'
+require 'phashion'
 require 'sinatra/activerecord'
 require 'streamio-ffmpeg'
 require 'yaml'
@@ -17,3 +18,5 @@ build_index(
   Settings.thumb_res,
   Settings.image_extentions + Settings.movie_extentions
 )
+
+find_duplicates()

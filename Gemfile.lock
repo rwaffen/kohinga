@@ -80,6 +80,7 @@ GEM
       mini_portile2 (~> 2.4.0)
     octicons (10.0.0)
       nokogiri (>= 1.6.3.1)
+    phashion (1.2.0)
     rack (2.2.3)
     rack-protection (2.0.8.1)
       rack
@@ -124,6 +125,7 @@ DEPENDENCIES
   config
   mini_magick
   octicons
+  phashion
   rake
   sinatra
   sinatra-activerecord

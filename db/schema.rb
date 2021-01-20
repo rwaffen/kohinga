@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2020_08_09_000749) do
+ActiveRecord::Schema.define(version: 2021_01_20_130715) do
 
   create_table "folders", force: :cascade do |t|
     t.string "md5_path"
@@ -29,6 +29,11 @@ ActiveRecord::Schema.define(version: 2020_08_09_000749) do
     t.datetime "updated_at"
     t.string "image_name"
     t.boolean "favorite", default: false
+    t.string "fingerprint"
+    t.boolean "duplicate", default: false
+    t.string "duplicate_of"
+    t.boolean "is_video"
+    t.boolean "is_image"
   end
 
 end

@@ -12,7 +12,8 @@ def index_files(path, extensions)
       file_path: file,
       folder_path: File.dirname(file),
       image_name: File.basename(file, '.*'),
-      md5_path: Digest::MD5.hexdigest(file)
+      md5_path: Digest::MD5.hexdigest(file),
+      fingerprint: Phashion::Image.new(file).fingerprint
     }
   end
 
@@ -37,10 +38,25 @@ end
 def write_files_to_db(file_hash)
   file_hash.each do |file|
     Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
-      image.file_path   = file[:file_path]
-      image.folder_path = file[:folder_path]
-      image.image_name  = file[:image_name]
-      image.md5_path    = file[:md5_path]
+      duplicates = Image.find_by(fingerprint: file[:fingerprint])
+
+      if Settings.movie_extentions.include? File.extname(file[:file_path]).delete('.')
+        is_video = true
+      end
+
+      if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
+        is_image = true
+      end
+
+      image.file_path    = file[:file_path]
+      image.folder_path  = file[:folder_path]
+      image.image_name   = file[:image_name]
+      image.md5_path     = file[:md5_path]
+      image.fingerprint  = file[:fingerprint]
+      image.duplicate    = true unless duplicates.nil?
+      image.duplicate_of = duplicates unless duplicates.nil?
+      image.is_image     = is_image
+      image.is_video     = is_video
     end
   end
 end
@@ -172,4 +188,21 @@ def flatten_paths_array(paths)
   (paths.sort << "").each_cons(2).
     reject { |x,y| y.start_with?(x) }.
     map(&:first)
+end
+
+def find_duplicates
+  Image.find_each do |image|
+    if image.fingerprint.nil?
+      fingerprint = Phashion::Image.new(image.file_path).fingerprint
+      image.fingerprint = fingerprint
+    end
+
+    duplicates = Image.where(fingerprint: image.fingerprint)
+
+    if duplicates.size > 1
+      image.update_attribute(:duplicate, true)
+    else
+      image.update_attribute(:duplicate, false)
+    end
+  end
 end

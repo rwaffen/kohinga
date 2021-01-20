@@ -4,6 +4,7 @@ require 'digest'
 require 'fileutils'
 require 'mini_magick'
 require 'octicons'
+require 'phashion'
 require 'securerandom'
 require 'sinatra'
 require 'sinatra/activerecord'
@@ -35,15 +36,17 @@ get '/config' do
   erb :config
 end
 
+get '/duplicates' do
+  erb :duplicates
+end
+
 get '/favorites' do
   erb :favorites
 end
 
-post '/favorite/add/:md5' do
+post '/favorite/:md5' do
   image = Image.find_by(md5_path: params[:md5])
-  image.favorite = true
-  image.save
-  "true"
+  image.update_attribute(:favorite, params[:favorite])
 end
 
 get '/folders' do
@@ -140,12 +143,7 @@ end
 
 get '/image/:md5' do
   image = Image.find_by(md5_path: params[:md5])
-  send_file(
-    "#{image.file_path}",
-    :disposition => 'inline',
-    :stream => true,
-    :file_name => image.file_path
-  )
+  send_file("#{image.file_path}", :disposition => 'inline')
 end
 
 delete '/image/:md5' do
@@ -166,10 +164,21 @@ post '/image/upload' do
       File.open(target, 'wb') { |f| f.write file[:tempfile].read }
 
       Image.find_or_create_by(md5_path: md5_path) do |image|
+
+        if Settings.movie_extentions.include? File.extname(file[:filename]).delete('.')
+          is_video = true
+        end
+
+        if Settings.image_extentions.include? File.extname(file[:filename]).delete('.')
+          is_image = true
+        end
+
         image.file_path   = target
         image.folder_path = folder_path
         image.image_name  = File.basename(file[:filename], '.*')
         image.md5_path    = md5_path
+        image.is_image    = is_image
+        image.is_video    = is_video
       end
 
       create_thumb(md5_path, Settings.thumb_target, Settings.thumb_res)
@@ -188,10 +197,21 @@ post '/image/move/:md5' do
   puts "####### moved image: from #{image.file_path} to #{new_file_path}"
 
   Image.find_or_create_by(md5_path: new_md5_path) do |image|
+    if Settings.movie_extentions.include? File.extname(new_file_path).delete('.')
+      is_video = true
+    end
+
+    if Settings.image_extentions.include? File.extname(new_file_path).delete('.')
+      is_image = true
+    end
+
     image.file_path   = new_file_path
     image.folder_path = File.dirname(new_file_path)
     image.image_name  = File.basename(new_file_path, '.*')
     image.md5_path    = new_md5_path
+    image.is_image    = is_image
+    image.is_video    = is_video
+
   end
 
   create_thumb(new_md5_path, Settings.thumb_target, Settings.thumb_res)
@@ -207,5 +227,6 @@ get '/indexer' do
     Settings.thumb_res,
     Settings.image_extentions + Settings.movie_extentions
   )
+  find_duplicates()
   erb :index, :locals => {:message => 'Index ready'}
 end
