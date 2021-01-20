@@ -112,7 +112,7 @@ end %>
               <button class="btn btn-outline-danger  btn-sm mr-1" type="button" data-toggle="modal" data-target="#Delete<%= short_md5 %>Modal"><%= trashcan %></button>
           </div>
 
-          <video width="640" height="320" controls id="video<%= image.md5_path %>" style="display:none;">
+          <video controls id="video<%= image.md5_path %>" style="display:none;">
             <source src="/image/<%= image.md5_path %>">
           </video>
         </div>
