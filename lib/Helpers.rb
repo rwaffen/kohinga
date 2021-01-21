@@ -8,7 +8,7 @@ def index_files(path, extensions)
   end
 
   files.flatten.each do |file|
-    if Settings.movie_extentions.include? File.extname(file[:file_path]).delete('.')
+    if Settings.movie_extentions.include? File.extname(file).delete('.')
       files_list  << {
         file_path: file,
         folder_path: File.dirname(file),
@@ -19,7 +19,7 @@ def index_files(path, extensions)
       }
     end
 
-    if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
+    if Settings.image_extentions.include? File.extname(file).delete('.')
       files_list  << {
         file_path: file,
         folder_path: File.dirname(file),
