@@ -40,6 +40,11 @@ get '/duplicates' do
   erb :duplicates
 end
 
+get '/duplicate/scan' do
+  find_duplicates()
+  erb :index, :locals => { :message => 'Duplicate Scan ready' }
+end
+
 get '/favorites' do
   erb :favorites
 end
@@ -227,6 +232,5 @@ get '/indexer' do
     Settings.thumb_res,
     Settings.image_extentions + Settings.movie_extentions
   )
-  find_duplicates()
   erb :index, :locals => {:message => 'Index ready'}
 end
