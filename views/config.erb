@@ -1,6 +1,5 @@
 <% settings_yaml = YAML.load_file('config/settings.yml') %>
 
-
   <% unless params.empty? %>
   <div class="alert alert-success alert-dismissible fade show" role="alert">
     All settings have been saved!
@@ -9,7 +8,6 @@
     </button>
   </div>
   <% end %>
-
 
 <div class="row ml-1">
   <form action="/config" method="get" >
@@ -66,9 +64,17 @@
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
 </div>
+
 <br>
+This may take a while...
 <div class="row ml-1">
-<a class="btn btn-danger" href="/indexer">Online Indexer</a>
+  <a class="btn btn-danger" href="/indexer">Online Indexer</a>
+</div>
+
+<br>
+
+<div class="row ml-1">
+  <a class="btn btn-outline-danger" href="/duplicate/scan">Online Duplicate Scan</a>
 </div>
 
 <%
