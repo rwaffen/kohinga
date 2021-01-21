@@ -10,6 +10,7 @@ image_extentions:
 movie_extentions:
 - mov
 - mp4
+- m4v
 - avi
 - mkv
 images_per_page: '30'
