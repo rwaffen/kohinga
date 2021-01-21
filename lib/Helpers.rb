@@ -8,13 +8,28 @@ def index_files(path, extensions)
   end
 
   files.flatten.each do |file|
-    files_list  << {
-      file_path: file,
-      folder_path: File.dirname(file),
-      image_name: File.basename(file, '.*'),
-      md5_path: Digest::MD5.hexdigest(file),
-      fingerprint: Phashion::Image.new(file).fingerprint
-    }
+    if Settings.movie_extentions.include? File.extname(file[:file_path]).delete('.')
+      files_list  << {
+        file_path: file,
+        folder_path: File.dirname(file),
+        image_name: File.basename(file, '.*'),
+        md5_path: Digest::MD5.hexdigest(file),
+        is_video: true,
+        is_image: false
+      }
+    end
+
+    if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
+      files_list  << {
+        file_path: file,
+        folder_path: File.dirname(file),
+        image_name: File.basename(file, '.*'),
+        md5_path: Digest::MD5.hexdigest(file),
+        fingerprint: Phashion::Image.new(file).fingerprint,
+        is_image: true,
+        is_video: false
+      }
+    end
   end
 
   return files_list
@@ -40,23 +55,15 @@ def write_files_to_db(file_hash)
     Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
       duplicates = Image.find_by(fingerprint: file[:fingerprint])
 
-      if Settings.movie_extentions.include? File.extname(file[:file_path]).delete('.')
-        is_video = true
-      end
-
-      if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
-        is_image = true
-      end
-
-      image.file_path    = file[:file_path]
-      image.folder_path  = file[:folder_path]
-      image.image_name   = file[:image_name]
-      image.md5_path     = file[:md5_path]
-      image.fingerprint  = file[:fingerprint]
       image.duplicate    = true unless duplicates.nil?
       image.duplicate_of = duplicates unless duplicates.nil?
-      image.is_image     = is_image
-      image.is_video     = is_video
+      image.file_path    = file[:file_path]
+      image.fingerprint  = file[:fingerprint]
+      image.folder_path  = file[:folder_path]
+      image.image_name   = file[:image_name]
+      image.is_image     = file[:is_image]
+      image.is_video     = file[:is_video]
+      image.md5_path     = file[:md5_path]
     end
   end
 end
@@ -181,6 +188,7 @@ def build_index(image_root, thumb_target, thumb_size, extensions)
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs(thumb_target, thumb_size)
+  find_duplicates()
 end
 
 def flatten_paths_array(paths)
@@ -192,17 +200,19 @@ end
 
 def find_duplicates
   Image.find_each do |image|
-    if image.fingerprint.nil?
-      fingerprint = Phashion::Image.new(image.file_path).fingerprint
-      image.fingerprint = fingerprint
-    end
+    unless image.is_video
+      if image.fingerprint.nil?
+        fingerprint = Phashion::Image.new(image.file_path).fingerprint
+        image.fingerprint = fingerprint
+      end
 
-    duplicates = Image.where(fingerprint: image.fingerprint)
+      duplicates = Image.where(fingerprint: image.fingerprint)
 
-    if duplicates.size > 1
-      image.update_attribute(:duplicate, true)
-    else
-      image.update_attribute(:duplicate, false)
+      if duplicates.size > 1
+        image.update_attribute(:duplicate, true)
+      else
+        image.update_attribute(:duplicate, false)
+      end
     end
   end
 end
