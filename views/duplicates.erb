@@ -1,12 +1,7 @@
 <%
   trashcan       = Octicons::Octicon.new("trashcan").to_svg
-  versions       = Octicons::Octicon.new("versions").to_svg
   info           = Octicons::Octicon.new("info").to_svg
-  pencil         = Octicons::Octicon.new("pencil").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
-  upload         = Octicons::Octicon.new("repo-push").to_svg
-  star           = Octicons::Octicon.new("star").to_svg
-  star_fill      = Octicons::Octicon.new("star-fill").to_svg
 
   images         = Image.where(duplicate: true).order("created_at #{Settings.sort_order}, image_name").paginate(
                       page: params[:page],
