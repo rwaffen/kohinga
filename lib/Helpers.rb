@@ -191,13 +191,6 @@ def build_index(image_root, thumb_target, thumb_size, extensions)
   find_duplicates()
 end
 
-def flatten_paths_array(paths)
-  # https://stackoverflow.com/questions/62741326/ruby-array-of-paths-sort-and-delete-if-included-in-another-item/
-  (paths.sort << "").each_cons(2).
-    reject { |x,y| y.start_with?(x) }.
-    map(&:first)
-end
-
 def find_duplicates
   Image.find_each do |image|
     unless image.is_video
