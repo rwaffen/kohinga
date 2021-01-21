@@ -1,15 +1,13 @@
 <%
   trashcan       = Octicons::Octicon.new("trashcan").to_svg
-  versions       = Octicons::Octicon.new("versions").to_svg
   info           = Octicons::Octicon.new("info").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
-  upload         = Octicons::Octicon.new("repo-push").to_svg
-  star           = Octicons::Octicon.new("star").to_svg
-  star_fill      = Octicons::Octicon.new("star-fill").to_svg
+  star           = Octicons::Octicon.new("star-fill").to_svg
 
   images         = Image.where(favorite: true).order(image_name: :asc).paginate(
                     page: params[:page],
-                    per_page: Settings.images_per_page)
+                    per_page: Settings.images_per_page
+                  )
 %>
 <% unless images.empty? %>
   <% unless images.count < Settings.images_per_page.to_i %>
@@ -47,12 +45,15 @@
               </button>
             </div>
             <div class="modal-body">
-              ID: <small><%= image.id %></small><br>
-              MD5: <small><%= image.md5_path %></small><br>
-              Path: <small><%= image.file_path %></small><br>
-              Folder: <small><%= image.folder_path %></small><br>
-              Name: <small><%= image.image_name %></small><br>
               Created: <small><%= image.created_at %></small><br>
+              Duplicate: <small><%= image.duplicate %></small><br>
+              Duplicates: <small><%= image.duplicate_of %></small><br>
+              Fingerprint: <small><%= image.fingerprint %></small><br>
+              Folder: <small><%= image.folder_path %></small><br>
+              ID: <small><%= image.id %></small><br>
+              MD5 Path: <small><%= image.md5_path %></small><br>
+              Name: <small><%= image.image_name %></small><br>
+              Path: <small><%= image.file_path %></small><br>
               Updated: <small><%= image.updated_at %></small><br>
             </div>
           </div>
