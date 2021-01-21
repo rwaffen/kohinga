@@ -14,3 +14,4 @@ gem 'sqlite3'
 gem 'streamio-ffmpeg'
 gem 'will_paginate'
 
+gem 'rubocop', require: false
