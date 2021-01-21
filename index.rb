@@ -18,5 +18,3 @@ build_index(
   Settings.thumb_res,
   Settings.image_extentions + Settings.movie_extentions
 )
-
-find_duplicates()
