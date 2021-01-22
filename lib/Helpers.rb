@@ -193,7 +193,7 @@ end
 
 def find_duplicates
   Image.find_each do |image|
-    unless image.is_video
+    if image.is_image
       if image.fingerprint.nil?
         fingerprint = Phashion::Image.new(image.file_path).fingerprint
         image.fingerprint = fingerprint
