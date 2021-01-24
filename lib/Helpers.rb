@@ -56,10 +56,18 @@ def write_files_to_db(file_hash)
   file_hash.each do |file|
     logger.debug "processing: #{file[:file_path]}"
     Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
-      duplicates = Image.find_by(fingerprint: file[:fingerprint])
 
-      image.duplicate    = true unless duplicates.nil?
-      image.duplicate_of = duplicates.file_path  unless duplicates.nil?
+      if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
+        duplicates = Image.where(fingerprint: file[:fingerprint])
+
+          if duplicates.size > 1
+            image.duplicate = true
+            duplicates.each { |dupe| image.duplicate_of = dupe.file_path}
+          else
+            image.duplicate = false
+          end
+      end
+
       image.file_path    = file[:file_path]
       image.fingerprint  = file[:fingerprint]
       image.folder_path  = file[:folder_path]
@@ -67,6 +75,7 @@ def write_files_to_db(file_hash)
       image.is_image     = file[:is_image]
       image.is_video     = file[:is_video]
       image.md5_path     = file[:md5_path]
+      image.save
     end
   end
 end
@@ -210,7 +219,8 @@ def find_duplicates
   Image.find_each do |image|
     if image.is_image
       if image.fingerprint.nil?
-        fingerprint = Phashion::Image.new(image.file_path).fingerprint
+        logger.info "genrating image fingerprint for #{image.file_path}"
+        fingerprint       = Phashion::Image.new(image.file_path).fingerprint
         image.fingerprint = fingerprint
       end
 
@@ -218,11 +228,11 @@ def find_duplicates
 
       if duplicates.size > 1
         image.duplicate = true
-        duplicates.each do |dupe|
-          image.duplicate_of = dupe.file_path
-        end
+        duplicates.each { |dupe| image.duplicate_of = dupe.file_path }
+        image.save
       else
         image.duplicate = false
+        image.save
       end
     end
   end
