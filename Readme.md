@@ -28,7 +28,7 @@ It is a ruby sinatra web app bundled with bootstrap, jquery and fancybox.
 
 ### Build index
 
-To index your images run `bundle exec ruby index.rb` or use the `/indexer` path from inside the app.
+To index your images run `curl -v localhost:4567/indexer` or use the `/indexer` path from inside the app.
 The `/indexer` path will get no output at the moment, but will report when finished.
 This could take a while, depending on the size of your collection.
 You can see the progress on the console or from `docker logs kohinga -f`
