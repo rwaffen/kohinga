@@ -2,12 +2,14 @@ require 'action_view'
 require 'config'
 require 'digest'
 require 'fileutils'
+require 'logger'
 require 'mini_magick'
 require 'octicons'
 require 'phashion'
 require 'securerandom'
 require 'sinatra'
 require 'sinatra/activerecord'
+require 'sinatra/custom_logger'
 require 'streamio-ffmpeg'
 require 'will_paginate'
 require 'will_paginate/active_record'
@@ -17,16 +19,21 @@ require_relative 'lib/BootstrapLinkRenderer'
 require_relative 'lib/Helpers'
 require_relative 'lib/Models'
 
-set :method_override, true
-
-set :session_secret, SecureRandom.uuid
-enable :sessions
-
 include ActionView::Helpers::TextHelper
+Config.load_and_set_settings "#{File.dirname(__FILE__)}/config/settings.yml"
 
-Config.load_and_set_settings(
-  "#{File.dirname(__FILE__)}/config/settings.yml"
-)
+set :method_override, true
+set :logger, Logger.new(STDOUT)
+set :session_secret, SecureRandom.uuid
+set :database, {
+  :adapter  =>'sqlite3',
+  :database => Settings.db_path,
+  :pool     => 5,
+  :timeout  => 5000,
+  :options  => Settings.db_options
+}
+
+enable :sessions
 
 get '/' do
   erb :index, :locals => {:message => nil }
@@ -233,4 +240,9 @@ get '/indexer' do
     Settings.image_extentions + Settings.movie_extentions
   )
   erb :index, :locals => {:message => 'Index ready'}
+end
+
+get '/testing' do
+  duplicates = Image.find_by(fingerprint: '13153662325975432931')
+  puts duplicates.file_path
 end
