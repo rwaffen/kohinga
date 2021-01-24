@@ -51,12 +51,15 @@ def index_folders(path)
 end
 
 def write_files_to_db(file_hash)
+  logger.info "writing new files to db ..."
+
   file_hash.each do |file|
+    logger.debug "processing: #{file[:file_path]}"
     Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
       duplicates = Image.find_by(fingerprint: file[:fingerprint])
 
       image.duplicate    = true unless duplicates.nil?
-      image.duplicate_of = duplicates unless duplicates.nil?
+      image.duplicate_of = duplicates.file_path  unless duplicates.nil?
       image.file_path    = file[:file_path]
       image.fingerprint  = file[:fingerprint]
       image.folder_path  = file[:folder_path]
@@ -69,7 +72,11 @@ def write_files_to_db(file_hash)
 end
 
 def write_folders_to_db(folder_hash)
+  logger.info "writing new folders to db ..."
+
   folder_hash.each do |folder_path|
+    logger.debug "processing: #{folder_path[:folder_path]}"
+
     Folder.find_or_create_by(md5_path: folder_path[:md5_path]) do |folder|
       folder.folder_path   = folder_path[:folder_path]
       folder.parent_folder = folder_path[:parent_folder]
@@ -87,6 +94,8 @@ def write_folders_to_db(folder_hash)
 end
 
 def create_thumbs(thumb_target, size)
+  logger.info "creating new thumbs ..."
+
   FileUtils.mkdir_p thumb_target
   Image.all.each do |image|
     image_path = "#{thumb_target}/#{image.md5_path}.png"
@@ -101,11 +110,11 @@ def create_thumbs(thumb_target, size)
           movie.screenshot(
             image_path,
             { seek_time: 1, resolution: size[0...-1], quality: 3 },
-            preserve_aspect_ratio: :width
+            preserve_aspect_ratio: :hight
           )
-          puts "generated: #{image_path}"
+          logger.info "generated: #{image_path}"
         rescue Exception => ex
-          puts "Error: #{ex.message}"
+          logger.info "Error: #{ex.message}"
         end
       end
 
@@ -119,9 +128,9 @@ def create_thumbs(thumb_target, size)
           convert.extent(size)
           convert << image_path # output file
           convert.call
-          puts "generated: #{image_path}"
+          logger.info "generated: #{image_path}"
         rescue Exception => ex
-          puts "Error: #{ex.message}"
+          logger.info "Error: #{ex.message}"
         end
       end
     end
@@ -137,7 +146,7 @@ def create_thumb(md5, thumb_target, size)
     movie.screenshot(
       image_path,
       { seek_time: 1, resolution: size[0...-1], quality: 3 },
-      preserve_aspect_ratio: :width
+      preserve_aspect_ratio: :hight
     )
   end
 
@@ -151,20 +160,22 @@ def create_thumb(md5, thumb_target, size)
     convert.call
   end
 
-  puts "generated: #{image_path}"
+  logger.info "generated: #{image_path}"
 end
 
 def remove_file(thumb_target)
+  logger.info "removing obsolete files ..."
+
   Image.all.each do |image|
     image_path = image.file_path
     thumb_path = "#{thumb_target}/#{image.md5_path}.png"
 
     unless File.file?(image_path)
-      puts "removing image from db: #{image.file_path}"
+      logger.info "removing image from db: #{image.file_path}"
       image.destroy
 
       if File.file?(thumb_path)
-        puts "removing thumbnail from fs: #{thumb_path}"
+        logger.info "removing thumbnail from fs: #{thumb_path}"
         File.delete(thumb_path)
       end
     end
@@ -172,11 +183,13 @@ def remove_file(thumb_target)
 end
 
 def remove_folder
+  logger.info "removing obsolete folders ..."
+
   Folder.all.each do |folder|
     folder_path = folder.folder_path
 
     unless File.directory?(folder_path)
-      puts "removing folder from db: #{folder.folder_path}"
+      logger.info "removing folder from db: #{folder.folder_path}"
       folder.destroy
     end
   end
@@ -192,6 +205,8 @@ def build_index(image_root, thumb_target, thumb_size, extensions)
 end
 
 def find_duplicates
+  logger.info "finding duplicates ..."
+
   Image.find_each do |image|
     if image.is_image
       if image.fingerprint.nil?
@@ -202,9 +217,12 @@ def find_duplicates
       duplicates = Image.where(fingerprint: image.fingerprint)
 
       if duplicates.size > 1
-        image.update_attribute(:duplicate, true)
+        image.duplicate = true
+        duplicates.each do |dupe|
+          image.duplicate_of = dupe.file_path
+        end
       else
-        image.update_attribute(:duplicate, false)
+        image.duplicate = false
       end
     end
   end
