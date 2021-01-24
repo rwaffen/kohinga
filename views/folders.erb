@@ -85,6 +85,7 @@ end %>
 
     <% short_md5 = truncate(image.md5_path, :length => 8, :omission => '') %>
       <div class="<%= Settings.col_options %>">
+
       <% if image.is_image %>
           <div class="card mb-1 <%= duplicate_color %>">
             <a href="/image/<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
@@ -99,6 +100,7 @@ end %>
             </div>
         </div>
       <% end %>
+
       <% if image.is_video %>
         <div class="card mb-1 <%= duplicate_color %>">
           <a href="#video<%= image.md5_path %>" data-fancybox="gallery" data-caption="<%= image.image_name %>">
