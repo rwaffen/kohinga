@@ -132,15 +132,17 @@ end %>
               </button>
             </div>
             <div class="modal-body">
-              Created: <small><%= image.created_at %></small><br>
+              ID: <small><%= image.id %></small><br>
+              Name: <small><%= image.image_name %></small><br>
+              MD5 Path: <small><%= image.md5_path %></small><br>
+              Fingerprint: <small><%= image.fingerprint %></small><br>
               Duplicate: <small><%= image.duplicate %></small><br>
               Duplicates: <small><%= image.duplicate_of %></small><br>
-              Fingerprint: <small><%= image.fingerprint %></small><br>
-              Folder: <small><%= image.folder_path %></small><br>
-              ID: <small><%= image.id %></small><br>
-              MD5 Path: <small><%= image.md5_path %></small><br>
-              Name: <small><%= image.image_name %></small><br>
               Path: <small><%= image.file_path %></small><br>
+              Folder: <small><%= image.folder_path %></small><br>
+              Image?: <small><%= image.is_image %></small><br>
+              Video?: <small><%= image.is_video %></small><br>
+              Created: <small><%= image.created_at %></small><br>
               Updated: <small><%= image.updated_at %></small><br>
             </div>
           </div>
