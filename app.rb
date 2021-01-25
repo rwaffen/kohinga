@@ -2,10 +2,15 @@ require 'action_view'
 require 'config'
 require 'digest'
 require 'fileutils'
+require 'logger'
 require 'mini_magick'
 require 'octicons'
+require 'phashion'
+require 'securerandom'
 require 'sinatra'
 require 'sinatra/activerecord'
+require 'sinatra/custom_logger'
+require 'streamio-ffmpeg'
 require 'will_paginate'
 require 'will_paginate/active_record'
 require 'yaml'
@@ -14,13 +19,21 @@ require_relative 'lib/BootstrapLinkRenderer'
 require_relative 'lib/Helpers'
 require_relative 'lib/Models'
 
-set :method_override, true
-
 include ActionView::Helpers::TextHelper
+Config.load_and_set_settings "#{File.dirname(__FILE__)}/config/settings.yml"
 
-Config.load_and_set_settings(
-  "#{File.dirname(__FILE__)}/config/settings.yml"
-)
+set :method_override, true
+set :logger, Logger.new(STDOUT)
+set :session_secret, SecureRandom.uuid
+set :database, {
+  :adapter  =>'sqlite3',
+  :database => Settings.db_path,
+  :pool     => 5,
+  :timeout  => 5000,
+  :options  => Settings.db_options
+}
+
+enable :sessions
 
 get '/' do
   erb :index, :locals => {:message => nil }
@@ -30,15 +43,22 @@ get '/config' do
   erb :config
 end
 
+get '/duplicates' do
+  erb :duplicates
+end
+
+get '/duplicate/scan' do
+  find_duplicates()
+  erb :index, :locals => { :message => 'Duplicate Scan ready' }
+end
+
 get '/favorites' do
   erb :favorites
 end
 
-post '/favorite/add/:md5' do
+post '/favorite/:md5' do
   image = Image.find_by(md5_path: params[:md5])
-  image.favorite = true
-  image.save
-  "true"
+  image.update_attribute(:favorite, params[:favorite])
 end
 
 get '/folders' do
@@ -156,10 +176,21 @@ post '/image/upload' do
       File.open(target, 'wb') { |f| f.write file[:tempfile].read }
 
       Image.find_or_create_by(md5_path: md5_path) do |image|
+
+        if Settings.movie_extentions.include? File.extname(file[:filename]).delete('.')
+          is_video = true
+        end
+
+        if Settings.image_extentions.include? File.extname(file[:filename]).delete('.')
+          is_image = true
+        end
+
         image.file_path   = target
         image.folder_path = folder_path
         image.image_name  = File.basename(file[:filename], '.*')
         image.md5_path    = md5_path
+        image.is_image    = is_image
+        image.is_video    = is_video
       end
 
       create_thumb(md5_path, Settings.thumb_target, Settings.thumb_res)
@@ -168,6 +199,7 @@ post '/image/upload' do
 
   redirect back
 end
+
 post '/image/move/:md5' do
   new_file_path = params[:file_path]
   image         = Image.find_by(md5_path: params[:md5])
@@ -177,10 +209,21 @@ post '/image/move/:md5' do
   puts "####### moved image: from #{image.file_path} to #{new_file_path}"
 
   Image.find_or_create_by(md5_path: new_md5_path) do |image|
+    if Settings.movie_extentions.include? File.extname(new_file_path).delete('.')
+      is_video = true
+    end
+
+    if Settings.image_extentions.include? File.extname(new_file_path).delete('.')
+      is_image = true
+    end
+
     image.file_path   = new_file_path
     image.folder_path = File.dirname(new_file_path)
     image.image_name  = File.basename(new_file_path, '.*')
     image.md5_path    = new_md5_path
+    image.is_image    = is_image
+    image.is_video    = is_video
+
   end
 
   create_thumb(new_md5_path, Settings.thumb_target, Settings.thumb_res)
@@ -194,7 +237,12 @@ get '/indexer' do
     Settings.originals_path,
     Settings.thumb_target,
     Settings.thumb_res,
-    Settings.image_extentions
+    Settings.image_extentions + Settings.movie_extentions
   )
   erb :index, :locals => {:message => 'Index ready'}
+end
+
+get '/testing' do
+  duplicates = Image.find_by(fingerprint: '13153662325975432931')
+  puts duplicates.file_path
 end

@@ -1,5 +1,5 @@
 ---
-thumb_path: "/images/thumbs"
+thumb_path: /images/thumbs
 originals_path: data/images
 thumb_target: public/images/thumbs
 thumb_res: 300x400^
@@ -7,5 +7,16 @@ image_extentions:
 - jpg
 - jpeg
 - png
+movie_extentions:
+- avi
+- m4v
+- mkv
+- mov
+- mp4
+- mpeg
+- ts
 images_per_page: '30'
 col_options: col-md-3
+sort_order: DESC
+db_path: data/db/kohinga.sqlite3
+db_options: PRAGMA case_sensitive_like = true
