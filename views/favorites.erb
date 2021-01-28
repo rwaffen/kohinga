@@ -126,6 +126,12 @@
       </div>
 
     <% end %>
+
+  <% unless images.count < Settings.images_per_page.to_i %>
+  <hr />
+  <%= will_paginate images, {:previous_label => '«', :next_label => '»', :inner_window => 0, :outer_window => 0} %>
+  <% end %>
+
   </div>
 <% end %>
 
