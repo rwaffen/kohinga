@@ -2,7 +2,7 @@
   trashcan       = Octicons::Octicon.new("trashcan").to_svg
   info           = Octicons::Octicon.new("info").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
-  images         = Image.where(duplicate: true).order("created_at #{Settings.sort_order}, fingerprint, image_name").paginate(
+  images         = Image.where(duplicate: true).order(fingerprint: :asc).paginate(
                       page: params[:page],
                       per_page: Settings.images_per_page
                    )
