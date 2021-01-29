@@ -101,18 +101,12 @@ def write_folders_to_db(folder_hash)
 end
 
 def create_thumbs(thumb_target, size)
-  logger.info 'creating new thumbs ...'
-
   FileUtils.mkdir_p thumb_target
   Image.all.each do |image|
     image_path = "#{thumb_target}/#{image.md5_path}.png"
-
-    # only create thumbs if we do not have them already
     next if File.file?(image_path)
 
-    # handle movie files
     if Settings.movie_extentions.include? File.extname(image.file_path).delete('.')
-      # "try" block
       begin
         movie = FFMPEG::Movie.new(image.file_path)
         movie.screenshot(
@@ -121,15 +115,13 @@ def create_thumbs(thumb_target, size)
           preserve_aspect_ratio: :hight
         )
         logger.info "generated: #{image_path}"
-      rescue Exception => e
+      rescue StandardError => e
         logger.info "Error: #{e.message}"
       end
     end
 
-    # handle image files
     next unless Settings.image_extentions.include? File.extname(image.file_path).delete('.')
 
-    # "try" block
     begin
       convert = MiniMagick::Tool::Convert.new
       convert << image.file_path # input file
@@ -139,7 +131,7 @@ def create_thumbs(thumb_target, size)
       convert << image_path # output file
       convert.call
       logger.info "generated: #{image_path}"
-    rescue Exception => e
+    rescue StandardError => e
       logger.info "Error: #{e.message}"
     end
   end
@@ -228,11 +220,11 @@ def find_duplicates
       if duplicates.size > 1
         image.duplicate = true
         duplicates.each { |dupe| image.duplicate_of = dupe.file_path }
-        image.save
       else
         image.duplicate = false
-        image.save
       end
+
+      image.save
     end
   end
 end

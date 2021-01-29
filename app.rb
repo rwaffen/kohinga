@@ -15,9 +15,9 @@ require 'will_paginate'
 require 'will_paginate/active_record'
 require 'yaml'
 
-require_relative 'lib/BootstrapLinkRenderer'
-require_relative 'lib/Helpers'
-require_relative 'lib/Models'
+require_relative 'lib/bootstrap_link_renderer'
+require_relative 'lib/helpers'
+require_relative 'lib/models'
 
 class Kohinga < Sinatra::Base
   include ActionView::Helpers::TextHelper
@@ -85,7 +85,6 @@ class Kohinga < Sinatra::Base
       parent_md5    = Digest::MD5.hexdigest(parent_folder)
 
       FileUtils.mkdir_p folder_path
-      puts "####### created folder: #{folder_path}"
 
       Folder.find_or_create_by(md5_path: md5_path) do |folder|
         folder.folder_path   = folder_path
@@ -109,7 +108,6 @@ class Kohinga < Sinatra::Base
     parent_folder = folder.parent_folder.to_s
 
     FileUtils.rm_r folder.folder_path if File.directory?(folder.folder_path)
-    puts "####### delete folder: #{folder.folder_path}"
 
     updates = Folder.find_by(folder_path: parent_folder)
     if updates.sub_folders != Dir.glob("#{parent_folder}*/")
@@ -124,20 +122,17 @@ class Kohinga < Sinatra::Base
   post '/folder/move/:md5' do
     folder            = Folder.find_by(md5_path: params[:md5])
     old_parent_folder = folder.parent_folder.to_s
-
     new_folder_path   = params['move_folder']
     new_md5_path      = Digest::MD5.hexdigest(new_folder_path)
     new_parent_folder = "#{File.dirname(new_folder_path.delete_suffix('/'))}/"
-    new_parent_md5    = Digest::MD5.hexdigest(new_parent_folder)
 
     FileUtils.mv folder.folder_path, new_folder_path
-    puts "####### moved folder: from #{folder.folder_path} to #{new_folder_path}"
 
-    Folder.find_or_create_by(md5_path: new_md5_path) do |folder|
-      folder.folder_path   = new_folder_path
-      folder.parent_folder = new_parent_folder
-      folder.sub_folders   = Dir.glob("#{new_folder_path}*/")
-      folder.md5_path      = new_md5_path
+    Folder.find_or_create_by(md5_path: new_md5_path) do |folder_item|
+      folder_item.folder_path   = new_folder_path
+      folder_item.parent_folder = new_parent_folder
+      folder_item.sub_folders   = Dir.glob("#{new_folder_path}*/")
+      folder_item.md5_path      = new_md5_path
     end
 
     update_old_parent = Folder.find_by(folder_path: old_parent_folder)
@@ -204,19 +199,18 @@ class Kohinga < Sinatra::Base
     new_md5_path  = Digest::MD5.hexdigest(new_file_path)
 
     FileUtils.mv image.file_path, new_file_path
-    puts "####### moved image: from #{image.file_path} to #{new_file_path}"
 
-    Image.find_or_create_by(md5_path: new_md5_path) do |image|
+    Image.find_or_create_by(md5_path: new_md5_path) do |image_item|
       is_video = true if Settings.movie_extentions.include? File.extname(new_file_path).delete('.')
 
       is_image = true if Settings.image_extentions.include? File.extname(new_file_path).delete('.')
 
-      image.file_path   = new_file_path
-      image.folder_path = File.dirname(new_file_path)
-      image.image_name  = File.basename(new_file_path, '.*')
-      image.md5_path    = new_md5_path
-      image.is_image    = is_image
-      image.is_video    = is_video
+      image_item.file_path   = new_file_path
+      image_item.folder_path = File.dirname(new_file_path)
+      image_item.image_name  = File.basename(new_file_path, '.*')
+      image_item.md5_path    = new_md5_path
+      image_item.is_image    = is_image
+      image_item.is_video    = is_video
     end
 
     create_thumb(new_md5_path, Settings.thumb_target, Settings.thumb_res)
