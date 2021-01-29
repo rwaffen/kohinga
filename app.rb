@@ -26,17 +26,17 @@ set :method_override, true
 set :logger, Logger.new(STDOUT)
 set :session_secret, SecureRandom.uuid
 set :database, {
-  :adapter  =>'sqlite3',
+  :adapter => 'sqlite3',
   :database => Settings.db_path,
-  :pool     => 5,
-  :timeout  => 5000,
-  :options  => Settings.db_options
+  :pool => 5,
+  :timeout => 5000,
+  :options => Settings.db_options
 }
 
 enable :sessions
 
 get '/' do
-  erb :index, :locals => {:message => nil }
+  erb :index, :locals => { :message => nil }
 end
 
 get '/config' do
@@ -62,11 +62,11 @@ post '/favorite/:md5' do
 end
 
 get '/folders' do
-  erb :folders, :locals => {:folder_root => "#{Settings.originals_path}/"}
+  erb :folders, :locals => { :folder_root => "#{Settings.originals_path}/" }
 end
 
 get '/folders/*' do |path|
-  erb :folders, :locals => {:folder_root => path}
+  erb :folders, :locals => { :folder_root => path }
 end
 
 post '/folder/create' do
@@ -176,7 +176,6 @@ post '/image/upload' do
       File.open(target, 'wb') { |f| f.write file[:tempfile].read }
 
       Image.find_or_create_by(md5_path: md5_path) do |image|
-
         if Settings.movie_extentions.include? File.extname(file[:filename]).delete('.')
           is_video = true
         end
@@ -223,7 +222,6 @@ post '/image/move/:md5' do
     image.md5_path    = new_md5_path
     image.is_image    = is_image
     image.is_video    = is_video
-
   end
 
   create_thumb(new_md5_path, Settings.thumb_target, Settings.thumb_res)
@@ -239,7 +237,7 @@ get '/indexer' do
     Settings.thumb_res,
     Settings.image_extentions + Settings.movie_extentions
   )
-  erb :index, :locals => {:message => 'Index ready'}
+  erb :index, :locals => { :message => 'Index ready' }
 end
 
 get '/testing' do

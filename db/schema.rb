@@ -11,7 +11,6 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 2021_01_20_130715) do
-
   create_table "folders", force: :cascade do |t|
     t.string "md5_path"
     t.string "folder_path"
@@ -35,5 +34,4 @@ ActiveRecord::Schema.define(version: 2021_01_20_130715) do
     t.boolean "is_video"
     t.boolean "is_image"
   end
-
 end

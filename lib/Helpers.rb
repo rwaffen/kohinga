@@ -9,7 +9,7 @@ def index_files(path, extensions)
 
   files.flatten.each do |file|
     if Settings.movie_extentions.include? File.extname(file).delete('.')
-      files_list  << {
+      files_list << {
         file_path: file,
         folder_path: File.dirname(file),
         image_name: File.basename(file, '.*'),
@@ -20,7 +20,7 @@ def index_files(path, extensions)
     end
 
     if Settings.image_extentions.include? File.extname(file).delete('.')
-      files_list  << {
+      files_list << {
         file_path: file,
         folder_path: File.dirname(file),
         image_name: File.basename(file, '.*'),
@@ -56,16 +56,15 @@ def write_files_to_db(file_hash)
   file_hash.each do |file|
     logger.debug "processing: #{file[:file_path]}"
     Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
-
       if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
         duplicates = Image.where(fingerprint: file[:fingerprint])
 
-          if duplicates.size > 1
-            image.duplicate = true
-            duplicates.each { |dupe| image.duplicate_of = dupe.file_path}
-          else
-            image.duplicate = false
-          end
+        if duplicates.size > 1
+          image.duplicate = true
+          duplicates.each { |dupe| image.duplicate_of = dupe.file_path }
+        else
+          image.duplicate = false
+        end
       end
 
       image.file_path    = file[:file_path]
@@ -95,10 +94,9 @@ def write_folders_to_db(folder_hash)
 
     updates = Folder.find_by(md5_path: folder_path[:md5_path])
     if updates.sub_folders != folder_path[:sub_folders]
-       updates.sub_folders = folder_path[:sub_folders]
-       updates.save
+      updates.sub_folders = folder_path[:sub_folders]
+      updates.save
     end
-
   end
 end
 
@@ -114,7 +112,7 @@ def create_thumbs(thumb_target, size)
 
       # handle movie files
       if Settings.movie_extentions.include? File.extname(image.file_path).delete('.')
-        begin  # "try" block
+        begin # "try" block
           movie = FFMPEG::Movie.new(image.file_path)
           movie.screenshot(
             image_path,
@@ -129,7 +127,7 @@ def create_thumbs(thumb_target, size)
 
       # handle image files
       if Settings.image_extentions.include? File.extname(image.file_path).delete('.')
-        begin  # "try" block
+        begin # "try" block
           convert = MiniMagick::Tool::Convert.new
           convert << image.file_path # input file
           convert.resize(size)

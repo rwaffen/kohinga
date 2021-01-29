@@ -32,11 +32,11 @@ module WillPaginate
       end
 
       def previous_or_next_page(page, text, classname)
-          if page
-            tag(:li, link(text, page, :class => 'page-link'), :class => 'page-item')
-          else
-            tag(:li, link(text, page, :class => 'page-link'), {:class => 'page-item disabled', :tabindex => '-1'})
-          end
+        if page
+          tag(:li, link(text, page, :class => 'page-link'), :class => 'page-item')
+        else
+          tag(:li, link(text, page, :class => 'page-link'), { :class => 'page-item disabled', :tabindex => '-1' })
+        end
       end
 
       def gap
@@ -51,7 +51,7 @@ module WillPaginate
       def build_query(params)
         Rack::Utils.build_nested_query params
       end
-     end
+    end
 
     def self.registered(app)
       app.helpers Helpers
