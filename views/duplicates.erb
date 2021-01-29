@@ -2,8 +2,7 @@
   trashcan       = Octicons::Octicon.new("trashcan").to_svg
   info           = Octicons::Octicon.new("info").to_svg
   move           = Octicons::Octicon.new("git-compare").to_svg
-
-  images         = Image.where(duplicate: true).order("created_at #{Settings.sort_order}, image_name").paginate(
+  images         = Image.where(duplicate: true).order(fingerprint: :asc).paginate(
                       page: params[:page],
                       per_page: Settings.images_per_page
                    )
@@ -103,4 +102,9 @@
 
     <% end %>
   </div>
+
+  <% unless images.count < Settings.images_per_page.to_i %>
+  <hr />
+  <%= will_paginate images, {:previous_label => '«', :next_label => '»', :inner_window => 0, :outer_window => 0} %>
+  <% end %>
 <% end %>
