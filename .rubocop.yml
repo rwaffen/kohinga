@@ -48,5 +48,13 @@ Style/RedundantArgument:
   Enabled: true
 Style/SwapValues:
   Enabled: true
+Metrics/ClassLength:
+  Enabled: false
+Metrics/AbcSize:
+  Enabled: false
+Metrics/MethodLength:
+  Enabled: false
+Metrics/BlockLength:
+  Enabled: false
 
 require: rubocop-rake
