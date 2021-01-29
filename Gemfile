@@ -15,3 +15,4 @@ gem 'streamio-ffmpeg'
 gem 'will_paginate'
 
 gem 'rubocop', require: false
+gem 'rubocop-rake', require: false
