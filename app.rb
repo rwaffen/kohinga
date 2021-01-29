@@ -26,17 +26,17 @@ set :method_override, true
 set :logger, Logger.new(STDOUT)
 set :session_secret, SecureRandom.uuid
 set :database, {
-  :adapter => 'sqlite3',
-  :database => Settings.db_path,
-  :pool => 5,
-  :timeout => 5000,
-  :options => Settings.db_options
+  adapter: 'sqlite3',
+  database: Settings.db_path,
+  pool: 5,
+  timeout: 5000,
+  options: Settings.db_options
 }
 
 enable :sessions
 
 get '/' do
-  erb :index, :locals => { :message => nil }
+  erb :index, locals: { message: nil }
 end
 
 get '/config' do
@@ -48,8 +48,8 @@ get '/duplicates' do
 end
 
 get '/duplicate/scan' do
-  find_duplicates()
-  erb :index, :locals => { :message => 'Duplicate Scan ready' }
+  find_duplicates
+  erb :index, locals: { message: 'Duplicate Scan ready' }
 end
 
 get '/favorites' do
@@ -62,11 +62,11 @@ post '/favorite/:md5' do
 end
 
 get '/folders' do
-  erb :folders, :locals => { :folder_root => "#{Settings.originals_path}/" }
+  erb :folders, locals: { folder_root: "#{Settings.originals_path}/" }
 end
 
 get '/folders/*' do |path|
-  erb :folders, :locals => { :folder_root => path }
+  erb :folders, locals: { folder_root: path }
 end
 
 post '/folder/create' do
@@ -103,7 +103,7 @@ end
 
 delete '/folder/delete/:md5' do
   folder        = Folder.find_by(md5_path: params[:md5])
-  parent_folder = "#{folder.parent_folder}"
+  parent_folder = folder.parent_folder.to_s
 
   FileUtils.rm_r folder.folder_path if File.directory?(folder.folder_path)
   puts "####### delete folder: #{folder.folder_path}"
@@ -120,7 +120,7 @@ end
 
 post '/folder/move/:md5' do
   folder            = Folder.find_by(md5_path: params[:md5])
-  old_parent_folder = "#{folder.parent_folder}"
+  old_parent_folder = folder.parent_folder.to_s
 
   new_folder_path   = params['move_folder']
   new_md5_path      = Digest::MD5.hexdigest(new_folder_path)
@@ -155,7 +155,7 @@ end
 
 get '/image/:md5' do
   image = Image.find_by(md5_path: params[:md5])
-  send_file("#{image.file_path}", :disposition => 'inline')
+  send_file(image.file_path.to_s, disposition: 'inline')
 end
 
 delete '/image/:md5' do
@@ -176,13 +176,9 @@ post '/image/upload' do
       File.open(target, 'wb') { |f| f.write file[:tempfile].read }
 
       Image.find_or_create_by(md5_path: md5_path) do |image|
-        if Settings.movie_extentions.include? File.extname(file[:filename]).delete('.')
-          is_video = true
-        end
+        is_video = true if Settings.movie_extentions.include? File.extname(file[:filename]).delete('.')
 
-        if Settings.image_extentions.include? File.extname(file[:filename]).delete('.')
-          is_image = true
-        end
+        is_image = true if Settings.image_extentions.include? File.extname(file[:filename]).delete('.')
 
         image.file_path   = target
         image.folder_path = folder_path
@@ -208,13 +204,9 @@ post '/image/move/:md5' do
   puts "####### moved image: from #{image.file_path} to #{new_file_path}"
 
   Image.find_or_create_by(md5_path: new_md5_path) do |image|
-    if Settings.movie_extentions.include? File.extname(new_file_path).delete('.')
-      is_video = true
-    end
+    is_video = true if Settings.movie_extentions.include? File.extname(new_file_path).delete('.')
 
-    if Settings.image_extentions.include? File.extname(new_file_path).delete('.')
-      is_image = true
-    end
+    is_image = true if Settings.image_extentions.include? File.extname(new_file_path).delete('.')
 
     image.file_path   = new_file_path
     image.folder_path = File.dirname(new_file_path)
@@ -237,7 +229,7 @@ get '/indexer' do
     Settings.thumb_res,
     Settings.image_extentions + Settings.movie_extentions
   )
-  erb :index, :locals => { :message => 'Index ready' }
+  erb :index, locals: { message: 'Index ready' }
 end
 
 get '/testing' do

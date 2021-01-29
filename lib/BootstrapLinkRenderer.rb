@@ -4,7 +4,7 @@ module WillPaginate
       include ViewHelpers
 
       def will_paginate(collection, options = {}) #:nodoc:
-        options = options.merge(:renderer => Bootstrap4LinkRenderer) unless options[:renderer]
+        options = options.merge(renderer: Bootstrap4LinkRenderer) unless options[:renderer]
         super(collection, options)
       end
     end
@@ -20,22 +20,22 @@ module WillPaginate
       end
 
       def html_container(html)
-        tag :nav, tag(:ul, html, :class => 'pagination justify-content-center'), :"aria-label" => "Page navigation"
+        tag :nav, tag(:ul, html, class: 'pagination justify-content-center'), "aria-label": 'Page navigation'
       end
 
       def page_number(page)
         if page == current_page
-          tag :li, link(page, page, :class => 'page-link'), :class => 'page-item active'
+          tag :li, link(page, page, class: 'page-link'), class: 'page-item active'
         else
-          tag :li, link(page, page, :class => 'page-link'), :class => 'page-item'
+          tag :li, link(page, page, class: 'page-link'), class: 'page-item'
         end
       end
 
-      def previous_or_next_page(page, text, classname)
+      def previous_or_next_page(page, text, _classname)
         if page
-          tag(:li, link(text, page, :class => 'page-link'), :class => 'page-item')
+          tag(:li, link(text, page, class: 'page-link'), class: 'page-item')
         else
-          tag(:li, link(text, page, :class => 'page-link'), { :class => 'page-item disabled', :tabindex => '-1' })
+          tag(:li, link(text, page, class: 'page-link'), { class: 'page-item disabled', tabindex: '-1' })
         end
       end
 

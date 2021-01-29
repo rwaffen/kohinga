@@ -19,20 +19,20 @@ def index_files(path, extensions)
       }
     end
 
-    if Settings.image_extentions.include? File.extname(file).delete('.')
-      files_list << {
-        file_path: file,
-        folder_path: File.dirname(file),
-        image_name: File.basename(file, '.*'),
-        md5_path: Digest::MD5.hexdigest(file),
-        fingerprint: Phashion::Image.new(file).fingerprint,
-        is_image: true,
-        is_video: false
-      }
-    end
+    next unless Settings.image_extentions.include? File.extname(file).delete('.')
+
+    files_list << {
+      file_path: file,
+      folder_path: File.dirname(file),
+      image_name: File.basename(file, '.*'),
+      md5_path: Digest::MD5.hexdigest(file),
+      fingerprint: Phashion::Image.new(file).fingerprint,
+      is_image: true,
+      is_video: false
+    }
   end
 
-  return files_list
+  files_list
 end
 
 def index_folders(path)
@@ -47,11 +47,11 @@ def index_folders(path)
     }
   end
 
-  return folder_list
+  folder_list
 end
 
 def write_files_to_db(file_hash)
-  logger.info "writing new files to db ..."
+  logger.info 'writing new files to db ...'
 
   file_hash.each do |file|
     logger.debug "processing: #{file[:file_path]}"
@@ -80,7 +80,7 @@ def write_files_to_db(file_hash)
 end
 
 def write_folders_to_db(folder_hash)
-  logger.info "writing new folders to db ..."
+  logger.info 'writing new folders to db ...'
 
   folder_hash.each do |folder_path|
     logger.debug "processing: #{folder_path[:folder_path]}"
@@ -101,45 +101,46 @@ def write_folders_to_db(folder_hash)
 end
 
 def create_thumbs(thumb_target, size)
-  logger.info "creating new thumbs ..."
+  logger.info 'creating new thumbs ...'
 
   FileUtils.mkdir_p thumb_target
   Image.all.each do |image|
     image_path = "#{thumb_target}/#{image.md5_path}.png"
 
     # only create thumbs if we do not have them already
-    unless File.file?(image_path)
+    next if File.file?(image_path)
 
-      # handle movie files
-      if Settings.movie_extentions.include? File.extname(image.file_path).delete('.')
-        begin # "try" block
-          movie = FFMPEG::Movie.new(image.file_path)
-          movie.screenshot(
-            image_path,
-            { seek_time: 1, resolution: size[0...-1], quality: 3 },
-            preserve_aspect_ratio: :hight
-          )
-          logger.info "generated: #{image_path}"
-        rescue Exception => ex
-          logger.info "Error: #{ex.message}"
-        end
+    # handle movie files
+    if Settings.movie_extentions.include? File.extname(image.file_path).delete('.')
+      # "try" block
+      begin
+        movie = FFMPEG::Movie.new(image.file_path)
+        movie.screenshot(
+          image_path,
+          { seek_time: 1, resolution: size[0...-1], quality: 3 },
+          preserve_aspect_ratio: :hight
+        )
+        logger.info "generated: #{image_path}"
+      rescue Exception => e
+        logger.info "Error: #{e.message}"
       end
+    end
 
-      # handle image files
-      if Settings.image_extentions.include? File.extname(image.file_path).delete('.')
-        begin # "try" block
-          convert = MiniMagick::Tool::Convert.new
-          convert << image.file_path # input file
-          convert.resize(size)
-          convert.gravity('north')
-          convert.extent(size)
-          convert << image_path # output file
-          convert.call
-          logger.info "generated: #{image_path}"
-        rescue Exception => ex
-          logger.info "Error: #{ex.message}"
-        end
-      end
+    # handle image files
+    next unless Settings.image_extentions.include? File.extname(image.file_path).delete('.')
+
+    # "try" block
+    begin
+      convert = MiniMagick::Tool::Convert.new
+      convert << image.file_path # input file
+      convert.resize(size)
+      convert.gravity('north')
+      convert.extent(size)
+      convert << image_path # output file
+      convert.call
+      logger.info "generated: #{image_path}"
+    rescue Exception => e
+      logger.info "Error: #{e.message}"
     end
   end
 end
@@ -171,26 +172,26 @@ def create_thumb(md5, thumb_target, size)
 end
 
 def remove_file(thumb_target)
-  logger.info "removing obsolete files ..."
+  logger.info 'removing obsolete files ...'
 
   Image.all.each do |image|
     image_path = image.file_path
     thumb_path = "#{thumb_target}/#{image.md5_path}.png"
 
-    unless File.file?(image_path)
-      logger.info "removing image from db: #{image.file_path}"
-      image.destroy
+    next if File.file?(image_path)
 
-      if File.file?(thumb_path)
-        logger.info "removing thumbnail from fs: #{thumb_path}"
-        File.delete(thumb_path)
-      end
+    logger.info "removing image from db: #{image.file_path}"
+    image.destroy
+
+    if File.file?(thumb_path)
+      logger.info "removing thumbnail from fs: #{thumb_path}"
+      File.delete(thumb_path)
     end
   end
 end
 
 def remove_folder
-  logger.info "removing obsolete folders ..."
+  logger.info 'removing obsolete folders ...'
 
   Folder.all.each do |folder|
     folder_path = folder.folder_path
@@ -204,15 +205,15 @@ end
 
 def build_index(image_root, thumb_target, thumb_size, extensions)
   remove_file(thumb_target)
-  remove_folder()
+  remove_folder
   write_folders_to_db(index_folders(image_root))
   write_files_to_db(index_files(image_root, extensions))
   create_thumbs(thumb_target, thumb_size)
-  find_duplicates()
+  find_duplicates
 end
 
 def find_duplicates
-  logger.info "finding duplicates ..."
+  logger.info 'finding duplicates ...'
 
   Image.find_each do |image|
     if image.is_image
