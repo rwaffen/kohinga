@@ -46,3 +46,5 @@ Style/RedundantArgument:
   Enabled: true
 Style/SwapValues:
   Enabled: true
+
+require: rubocop-rake

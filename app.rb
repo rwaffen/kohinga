@@ -23,7 +23,7 @@ include ActionView::Helpers::TextHelper
 Config.load_and_set_settings "#{File.dirname(__FILE__)}/config/settings.yml"
 
 set :method_override, true
-set :logger, Logger.new(STDOUT)
+set :logger, Logger.new($stdout)
 set :session_secret, SecureRandom.uuid
 set :database, {
   adapter: 'sqlite3',
