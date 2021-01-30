@@ -21,7 +21,9 @@ require_relative 'lib/models'
 
 class Kohinga < Sinatra::Base
   include ActionView::Helpers::TextHelper
+
   register Sinatra::ActiveRecordExtension
+  register WillPaginate::Sinatra
 
   Config.load_and_set_settings "#{File.dirname(__FILE__)}/config/settings.yml"
 
