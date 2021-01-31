@@ -1,4 +1,6 @@
 def index_files_to_db(path, extensions)
+  time = Time.now
+
   Find.find(path) do |file|
     next unless extensions.include? File.extname(file).delete('.')
 
@@ -20,43 +22,8 @@ def index_files_to_db(path, extensions)
     }
     write_file_to_db(file_meta_hash)
   end
-end
 
-def index_files(path, extensions)
-  files_list = []
-  files = []
-
-  extensions.each do |extension|
-    # FNM_CASEFOLD is for case insensivity
-    files << Dir.glob("#{path}/**/*.#{extension}", File::FNM_CASEFOLD)
-  end
-
-  files.flatten.each do |file|
-    if Settings.movie_extentions.include? File.extname(file).delete('.')
-      files_list << {
-        file_path: file,
-        folder_path: File.dirname(file),
-        image_name: File.basename(file, '.*'),
-        md5_path: Digest::MD5.hexdigest(file),
-        is_video: true,
-        is_image: false
-      }
-    end
-
-    next unless Settings.image_extentions.include? File.extname(file).delete('.')
-
-    files_list << {
-      file_path: file,
-      folder_path: File.dirname(file),
-      image_name: File.basename(file, '.*'),
-      md5_path: Digest::MD5.hexdigest(file),
-      fingerprint: Phashion::Image.new(file).fingerprint,
-      is_image: true,
-      is_video: false
-    }
-  end
-
-  files_list
+  logger.debug "Indexing took #{Time.now - time} seconds."
 end
 
 def index_folders(path)
@@ -97,36 +64,6 @@ def write_file_to_db(file)
     image.is_video     = file[:is_video]
     image.md5_path     = file[:md5_path]
     image.save
-  end
-end
-
-def write_files_to_db(file_hash)
-  logger.info 'writing new files to db ...'
-
-  file_hash.each do |file|
-    logger.debug "processing: #{file[:file_path]}"
-
-    Image.find_or_create_by(md5_path: file[:md5_path]) do |image|
-      if Settings.image_extentions.include? File.extname(file[:file_path]).delete('.')
-        duplicates = Image.where(fingerprint: file[:fingerprint])
-
-        if duplicates.size > 1
-          image.duplicate = true
-          duplicates.each { |dupe| image.duplicate_of = dupe.file_path }
-        else
-          image.duplicate = false
-        end
-      end
-
-      image.file_path    = file[:file_path]
-      image.fingerprint  = file[:fingerprint]
-      image.folder_path  = file[:folder_path]
-      image.image_name   = file[:image_name]
-      image.is_image     = file[:is_image]
-      image.is_video     = file[:is_video]
-      image.md5_path     = file[:md5_path]
-      image.save
-    end
   end
 end
 
